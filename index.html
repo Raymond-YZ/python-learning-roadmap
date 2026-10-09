@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Python Learning Roadmap</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app">
+  <aside id="sidebar">
+    <div class="brand">
+      <span class="brand-mark">Py</span>
+      <div>
+        <h1>Python Learning Roadmap</h1>
+        <p>Read it. Write it. Ship it.</p>
+      </div>
+    </div>
+    <div class="side-progress">
+      <div class="side-progress-label"><span>Overall progress</span><span id="side-pct">0%</span></div>
+      <div class="bar"><div id="side-bar" class="bar-fill" style="width:0%"></div></div>
+    </div>
+    <nav id="module-nav" aria-label="Curriculum modules"></nav>
+    <div class="side-foot"><a href="#/progress">My progress &amp; reset</a></div>
+  </aside>
+  <div id="main">
+    <header id="topbar">
+      <nav class="tabs" aria-label="Sections">
+        <a href="#/" data-tab="roadmap">Roadmap</a>
+        <a href="#/practice" data-tab="practice">Practice</a>
+        <a href="#/progress" data-tab="progress">Progress</a>
+      </nav>
+      <div class="ring-wrap" title="Overall completion">
+        <svg class="ring" width="46" height="46" viewBox="0 0 46 46">
+          <circle cx="23" cy="23" r="19" class="ring-bg"></circle>
+          <circle cx="23" cy="23" r="19" class="ring-fg" id="ring-fg"></circle>
+        </svg>
+        <span id="ring-pct">0%</span>
+      </div>
+    </header>
+    <main id="view" aria-live="polite"></main>
+  </div>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
