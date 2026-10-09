@@ -1,0 +1,140 @@
+{
+  "estimatedMinutes": 90,
+  "exercises": [
+    {
+      "difficulty": "easy",
+      "hints": [
+        "Trailing `if` filters; dict comprehensions use `key: value`.",
+        "Nested comprehension: the outer `for` comes first.",
+        "`range(10)` gives 0-9; even check is `x % 2 == 0`."
+      ],
+      "id": "intermediate-ex1",
+      "prompt": "Write three one-liners (each a single expression assigned in the function):\n1. `evens_squared`: squares of even numbers from 0-9 → `[0, 4, 16, 36, 64]`\n2. `word_lengths`: dict mapping each word in `[\"hi\", \"hello\", \"hey\"]` to its length\n3. `flattened`: flatten `[[1, 2], [3], [4, 5]]` → `[1, 2, 3, 4, 5]`\n\nReturn all three as a tuple `(evens_squared, word_lengths, flattened)` from `comprehension_drills()`.",
+      "solution": "def comprehension_drills():\n    evens_squared = [x * x for x in range(10) if x % 2 == 0]\n    word_lengths = {w: len(w) for w in [\"hi\", \"hello\", \"hey\"]}\n    flattened = [x for row in [[1, 2], [3], [4, 5]] for x in row]\n    return evens_squared, word_lengths, flattened\n",
+      "starterCode": "def comprehension_drills():\n    pass\n",
+      "title": "Comprehension drills"
+    },
+    {
+      "difficulty": "medium",
+      "hints": [
+        "Tuple assignment `a, b = b, a + b` advances the sequence cleanly.",
+        "An infinite generator is fine — `islice` bounds the consumption.",
+        "`yield a` BEFORE updating, so the sequence starts at 0."
+      ],
+      "id": "intermediate-ex2",
+      "prompt": "Write a generator function `fib()` that yields Fibonacci numbers forever, starting 0, 1, 1, 2, 3, 5, ... Then write `first_n_fibs(n)` returning the first `n` as a list.\n\nExample:\n```python\nfirst_n_fibs(7)  # -> [0, 1, 1, 2, 3, 5, 8]\n```\n\nUse `itertools.islice` for the take-first-n part.",
+      "solution": "import itertools\n\n\ndef fib():\n    a, b = 0, 1\n    while True:\n        yield a\n        a, b = b, a + b\n\n\ndef first_n_fibs(n):\n    return list(itertools.islice(fib(), n))\n",
+      "starterCode": "import itertools\n\n\ndef fib():\n    pass\n\n\ndef first_n_fibs(n):\n    pass\n",
+      "title": "Fibonacci generator"
+    },
+    {
+      "difficulty": "medium",
+      "hints": [
+        "A decorator WITH arguments is three levels: `retry` -> `decorator` -> `wrapper`.",
+        "Loop `times` attempts; return immediately on success.",
+        "Save the exception each round and raise it after the loop ends."
+      ],
+      "id": "intermediate-ex3",
+      "prompt": "Write a decorator factory `retry(times)` so that `@retry(times=3)` re-runs the wrapped function up to `times` total attempts if it raises an exception, then re-raises the last exception if all attempts fail. Return the successful result otherwise.\n\nExample:\n```python\ncalls = []\n@retry(times=3)\ndef flaky():\n    calls.append(1)\n    if len(calls) < 3:\n        raise RuntimeError(\"boom\")\n    return \"ok\"\n\nflaky()  # -> 'ok' (succeeds on 3rd attempt)\n```\n\nUse `functools.wraps`.",
+      "solution": "import functools\n\n\ndef retry(times):\n    def decorator(fn):\n        @functools.wraps(fn)\n        def wrapper(*args, **kwargs):\n            last_error = None\n            for _ in range(times):\n                try:\n                    return fn(*args, **kwargs)\n                except Exception as e:\n                    last_error = e\n            raise last_error\n        return wrapper\n    return decorator\n",
+      "starterCode": "import functools\n\n\ndef retry(times):\n    pass\n",
+      "title": "Retry decorator"
+    },
+    {
+      "difficulty": "hard",
+      "hints": [
+        "Save the current directory BEFORE changing it.",
+        "`yield` hands control to the `with` block.",
+        "`try/finally` around the `yield` guarantees restoration on exceptions."
+      ],
+      "id": "intermediate-ex4",
+      "prompt": "Write a context manager `cd(path)` (using `@contextmanager`) that changes the process working directory to `path` for the duration of the `with` block, then restores the original directory — even if the block raises.\n\nExample:\n```python\nimport os\nprint(os.getcwd())      # /home/user\nwith cd(\"/tmp\"):\n    print(os.getcwd())  # /tmp\nprint(os.getcwd())      # /home/user again\n```\n\nUse `os.getcwd()` and `os.chdir()`.",
+      "solution": "import os\nfrom contextlib import contextmanager\n\n\n@contextmanager\ndef cd(path):\n    previous = os.getcwd()\n    os.chdir(path)\n    try:\n        yield\n    finally:\n        os.chdir(previous)\n",
+      "starterCode": "import os\nfrom contextlib import contextmanager\n\n\n@contextmanager\ndef cd(path):\n    pass\n",
+      "title": "Temporary directory changer"
+    },
+    {
+      "difficulty": "hard",
+      "hints": [
+        "`string.punctuation` holds all ASCII punctuation characters.",
+        "Replace punctuation with spaces, then `split()` on whitespace.",
+        "`Counter(...).most_common(n)` gives the final ranking."
+      ],
+      "id": "intermediate-ex5",
+      "prompt": "Write `common_words(text, n)` that returns the `n` most common words in `text` as a list of `(word, count)` tuples. Requirements: lowercase everything, strip punctuation, drop words shorter than 3 characters, and build it as a generator pipeline feeding a `Counter`.\n\nExample:\n```python\ncommon_words(\"the cat and the dog saw the bird\", 2)\n# -> [('the', 3), ('cat', 1)]\n```\n\nUse `string.punctuation` and `collections.Counter`.",
+      "solution": "import string\nfrom collections import Counter\n\n\ndef common_words(text, n):\n    lowered = (ch.lower() for ch in text)\n    no_punct = (ch if ch not in string.punctuation else \" \" for ch in lowered)\n    words = (w for w in \"\".join(no_punct).split() if len(w) >= 3)\n    return Counter(words).most_common(n)\n",
+      "starterCode": "import string\nfrom collections import Counter\n\n\ndef common_words(text, n):\n    pass\n",
+      "title": "Word frequency pipeline"
+    }
+  ],
+  "id": "intermediate",
+  "lessons": [
+    {
+      "body": "# Comprehensions, deep dive\n\nYou met list comprehensions in Data Structures. Now the full picture: they work for dicts and sets too, they nest, and generator expressions trade the brackets for lazy evaluation.\n\n```python\nsquares = [x * x for x in range(10) if x % 2 == 0]   # filter with trailing if\nprint(squares)   # [0, 4, 16, 36, 64]\n\nname_lengths = {name: len(name) for name in [\"amy\", \"bo\", \"cyrus\"]}  # dict comprehension\nevens = {x for x in range(10) if x % 2 == 0}          # set comprehension\n```\n\nNested comprehensions read inside-out: the leftmost `for` is the outer loop. Flattening a matrix is the canonical example — and the moment it stops being readable, rewrite it as a plain loop. Comprehensions are for clarity, not golf.\n\n```python\nmatrix = [[1, 2], [3, 4], [5, 6]]\nflat = [x for row in matrix for x in row]\nprint(flat)   # [1, 2, 3, 4, 5, 6]\n\n# same thing as a loop, when readability matters more:\nflat = []\nfor row in matrix:\n    for x in row:\n        flat.append(x)\n```\n\nGenerator expressions `(x*x for x in range(10**9))` produce values on demand — constant memory no matter the size. Anytime you're building a list just to iterate it once (especially into `sum()`, `any()`, `join()`), drop the brackets.\n\n```python\ntotal = sum(x * x for x in range(10**9))   # no giant list in memory\n```",
+      "id": "intermediate-comprehensions",
+      "jsNote": "Java: comprehensions are like streams — `[x*x for x in range(10) if x%2==0]` is `IntStream.range(0,10).filter(x -> x%2==0).map(x -> x*x).toList()`, minus the ceremony. Generator expressions are lazy streams that never materialize. JavaScript: `[x*x for x in range(10)]` is `[...Array(10).keys()].map(x => x*x)` — Python's version is the one JS developers wish they had.",
+      "keyPoints": [
+        "List, dict, and set comprehensions share one syntax; trailing `if` filters.",
+        "Nested comprehensions read left-to-right as outer-to-inner loops.",
+        "If a comprehension needs a comment to explain it, use a loop instead.",
+        "Generator expressions `( ... )` are lazy — use them when you only iterate once."
+      ],
+      "minutes": 12,
+      "title": "Comprehensions, deep dive"
+    },
+    {
+      "body": "# Generators and yield\n\nA generator function looks like a normal function but uses `yield` instead of `return`. Calling it doesn't run the body — it returns a generator object that produces values lazily, pausing at each `yield` and resuming on the next `next()`.\n\n```python\ndef countdown(n):\n    while n > 0:\n        yield n\n        n -= 1\n\ngen = countdown(3)\nprint(next(gen))   # 3\nprint(next(gen))   # 2\nprint(next(gen))   # 1\n# next(gen) now raises StopIteration — the sequence is exhausted\n```\n\nThe payoff is memory and composition. A generator pipeline processes huge (even infinite) sequences in constant memory — each stage yields one item at a time to the next.\n\n```python\nimport itertools\n\ndef naturals():\n    n = 1\n    while True:          # infinite sequence, fine — nothing is stored\n        yield n\n        n += 1\n\ndef squares(nums):\n    for n in nums:\n        yield n * n\n\nfirst_five = list(itertools.islice(squares(naturals()), 5))\nprint(first_five)   # [1, 4, 9, 16, 25]\n```\n\nKey mental model: `yield` freezes the function's entire state (local variables, loop position). `return` in a generator just ends iteration. And once exhausted, a generator is done — iterate it again and you get nothing; call the function again for a fresh one.",
+      "id": "intermediate-generators",
+      "jsNote": "Java: there is no direct equivalent — the closest is a lazy `Stream` or a custom `Iterator`, but both require far more boilerplate than one `yield` keyword. JavaScript: `function*` and `yield` exist in JS too and behave almost identically — if you've written a JS generator, you already know this; Python's just get used more because the ecosystem (itertools, for loops) embraces them.",
+      "keyPoints": [
+        "`yield` pauses the function and emits a value; the function's state is preserved between yields.",
+        "Calling a generator function returns a generator — the body runs lazily.",
+        "Generators enable constant-memory pipelines, including infinite sequences.",
+        "A generator is single-use: exhausted means exhausted; call the function again for a fresh one."
+      ],
+      "minutes": 14,
+      "title": "Generators and yield"
+    },
+    {
+      "body": "# Decorators\n\nFunctions are objects: you can pass them around, store them, and define them inside other functions. A decorator is a function that takes a function and returns a wrapped version — the `@` syntax is just shorthand for reassignment.\n\n```python\ndef shout(fn):\n    def wrapper(*args, **kwargs):\n        return fn(*args, **kwargs).upper()\n    return wrapper\n\n@shout\ndef greet(name):\n    return f\"hello, {name}\"\n\nprint(greet(\"amy\"))   # HELLO, AMY\n# @shout is exactly: greet = shout(greet)\n```\n\nThe `*args, **kwargs` in the wrapper is what makes it generic — it forwards any arguments. Without them, the decorator would only work on functions with that exact signature.\n\n```python\nimport functools, time\n\ndef timer(fn):\n    @functools.wraps(fn)      # preserves fn's name and docstring\n    def wrapper(*args, **kwargs):\n        start = time.perf_counter()\n        result = fn(*args, **kwargs)\n        print(f\"{fn.__name__} took {time.perf_counter() - start:.3f}s\")\n        return result\n    return wrapper\n\n@timer\ndef slow():\n    time.sleep(0.1)\n```\n\n`functools.wraps` matters: without it, the wrapper masquerades under its own name (`wrapper`), which breaks debugging, docs, and stacked decorators. Always include it. Decorators with their own arguments (`@retry(times=3)`) are one level deeper — a function returning a decorator — and you'll recognize the pattern when you see it.",
+      "id": "intermediate-decorators",
+      "jsNote": "Java: decorators are like annotations with behavior — Spring's `@Transactional` or `@Cacheable`, except you write them as plain functions in ~5 lines instead of annotation processors. JavaScript: this is a higher-order function (`const shout = fn => (...args) => ...`) — the `@` syntax is the only new part, and it's exactly what the JS decorators proposal copies. TypeScript's experimental decorators are the same idea.",
+      "keyPoints": [
+        "`@dec` is shorthand for `fn = dec(fn)` — a decorator wraps a function and returns a new one.",
+        "`*args, **kwargs` in the wrapper keeps the decorator generic.",
+        "Always use `@functools.wraps(fn)` so the wrapper keeps the original's name/docstring.",
+        "Common real uses: timing, logging, caching (`functools.lru_cache`), auth checks, retry."
+      ],
+      "minutes": 14,
+      "title": "Decorators"
+    },
+    {
+      "body": "# Context managers\n\nYou used `with open(...)` in File I/O — `with` works with any context manager, and you can write your own two ways: a class with `__enter__`/`__exit__`, or a generator with `@contextmanager`.\n\n```python\nimport time\nfrom contextlib import contextmanager\n\n@contextmanager\ndef timer(label):\n    start = time.perf_counter()\n    try:\n        yield                      # everything before yield = __enter__\n    finally:\n        elapsed = time.perf_counter() - start\n        print(f\"{label}: {elapsed:.3f}s\")   # everything after = __exit__\n\nwith timer(\"query\"):\n    time.sleep(0.1)                # query: 0.100s\n```\n\nCode before `yield` runs on entry, code after `yield` runs on exit — `try/finally` guarantees the exit code runs even if the block raises. That's the whole protocol: setup, yield control, guaranteed teardown.\n\n```python\nclass ManagedFile:\n    def __init__(self, path):\n        self.path = path\n    def __enter__(self):\n        self.f = open(self.path, encoding=\"utf-8\")\n        return self.f              # bound to the 'as' variable\n    def __exit__(self, exc_type, exc, tb):\n        self.f.close()\n        return False               # False: don't swallow exceptions\n\nwith ManagedFile(\"notes.txt\") as f:\n    print(f.read())\n```\n\nThe class form gives you full control (including the `__exit__` return value that decides whether exceptions are suppressed). The `@contextmanager` form covers 90% of cases in a third of the code. Reach for context managers whenever you have setup/teardown pairs: locks, database connections, temporary directory changes, patched test fixtures.",
+      "id": "intermediate-context",
+      "jsNote": "Java: this is try-with-resources generalized — any class can play the `AutoCloseable` role, not just I/O types, and the `@contextmanager` generator form has no Java equivalent at all. JavaScript: there is no `with` equivalent; the closest is `try/finally`, or the new explicit-resource-management `using` keyword (still rare) — Python's version is older and far more pervasive.",
+      "keyPoints": [
+        "`with` guarantees teardown via `__exit__`, even when the block raises.",
+        "`@contextmanager` + `yield` is the concise way to write one: before-yield = setup, after-yield = teardown.",
+        "The class form (`__enter__`/`__exit__`) gives full control, including exception suppression.",
+        "Use for any acquire/release pair: files, locks, connections, timers."
+      ],
+      "minutes": 12,
+      "title": "Context managers"
+    },
+    {
+      "body": "# itertools and functools essentials\n\n`itertools` is the standard library's toolkit for iterator algebra — memory-efficient building blocks that compose. `functools` holds higher-order function utilities. Together they replace a surprising amount of hand-written loops.\n\n```python\nimport itertools\n\nprint(list(itertools.chain([1, 2], [3, 4])))        # [1, 2, 3, 4] — concatenate\nprint(list(itertools.islice(range(10**9), 3)))       # [0, 1, 2] — lazy slice\nprint(list(itertools.accumulate([1, 2, 3, 4])))     # [1, 3, 6, 10] — running totals\n\npairs = itertools.product(\"AB\", [1, 2])             # cartesian product\nprint(list(pairs))  # [('A', 1), ('A', 2), ('B', 1), ('B', 2)]\n```\n\n`groupby` deserves a warning: it only groups *consecutive* equal keys, so sort first. And `cycle`/`repeat`/`count` are infinite — only consume them through `islice` or a bounded loop.\n\n```python\nfrom functools import lru_cache, partial, reduce\n\n@lru_cache(maxsize=None)          # memoize: repeated calls with same args are free\ndef fib(n):\n    return n if n < 2 else fib(n-1) + fib(n-2)\n\nprint(fib(100))                   # instant — naive recursion would never finish\n\ndouble = partial(lambda x, factor: x * factor, factor=2)  # pre-fill arguments\nprint(double(21))                 # 42\nprint(reduce(lambda a, b: a + b, [1, 2, 3, 4]))  # 10 — fold left\n```\n\n`lru_cache` is the highest-value decorator in the standard library — one line turns exponential recursion into linear time. `partial` adapts functions to the shape a caller expects. `reduce` folds a sequence into one value; use it sparingly, since a loop or `sum()` is usually clearer.",
+      "id": "intermediate-itertools",
+      "jsNote": "Java: `itertools` is like `Stream` operations (`flatMap` is `chain`, `limit` is `islice`, cartesian products need nested loops or libraries) — but lazy by default with no terminal-operation ceremony. `@lru_cache` is a hand-rolled memoization map or Caffeine cache in one line. JavaScript: `itertools` fills the gap lodash covers (`_.chunk`, `_.groupBy` — note lodash's groupBy doesn't need pre-sorting, Python's does), and `lru_cache` is the memoize helper every JS codebase rewrites.",
+      "keyPoints": [
+        "`itertools`: `chain`, `islice`, `accumulate`, `product`, `groupby` (sort first!), infinite `count`/`cycle`.",
+        "Everything is lazy — compose first, materialize with `list()` only when needed.",
+        "`@lru_cache` memoizes for free; `partial` pre-fills arguments; `reduce` folds.",
+        "Prefer readability: a plain loop beats a clever one-liner nobody can parse."
+      ],
+      "minutes": 12,
+      "title": "itertools and functools essentials"
+    }
+  ],
+  "tagline": "Comprehensions, generators, decorators, context managers, and iterator power tools.",
+  "title": "Intermediate Python"
+}

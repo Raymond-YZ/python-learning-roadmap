@@ -1,0 +1,114 @@
+{
+  "estimatedMinutes": 90,
+  "exercises": [
+    {
+      "difficulty": "easy",
+      "hints": [
+        "`@app.get` with `{name}` in the path captures that segment.",
+        "Return a dict — FastAPI serializes it to JSON.",
+        "Run with `uvicorn main:app --reload` and check `/docs`."
+      ],
+      "id": "capstone-ex1",
+      "prompt": "Create `main.py` with a FastAPI app exposing `GET /greet/{name}` that returns `{\"greeting\": \"Hello, <name>!\"}`. Include the uvicorn command to run it.\n\nVerify:\n```python\n# terminal: uvicorn main:app --reload\n# browser: http://127.0.0.1:8000/greet/ada  -> {\"greeting\": \"Hello, ada!\"}\n```",
+      "solution": "from fastapi import FastAPI\n\napp = FastAPI()\n\n\n@app.get(\"/greet/{name}\")\ndef greet(name: str):\n    return {\"greeting\": f\"Hello, {name}!\"}\n\n\n# run with: uvicorn main:app --reload\n",
+      "starterCode": "from fastapi import FastAPI\n\napp = FastAPI()\n",
+      "title": "Your first route"
+    },
+    {
+      "difficulty": "medium",
+      "hints": [
+        "Parameters not in the path string are treated as query params.",
+        "Type hints drive validation: `float` rejects `\"abc\"` with a 422.",
+        "Default `None` makes `genre` optional; check `genre is None` OR matches."
+      ],
+      "id": "capstone-ex2",
+      "prompt": "Add to your app a `GET /movies` endpoint with an optional query parameter `genre` (string, default `None`) and `min_rating` (float, default `0.0`). It should return movies from the list below filtered by genre (if given) and rating >= min_rating.\n\n```python\nMOVIES = [\n    {\"title\": \"Dune\", \"genre\": \"sci-fi\", \"rating\": 8.5},\n    {\"title\": \"Heat\", \"genre\": \"crime\", \"rating\": 8.2},\n    {\"title\": \"Amélie\", \"genre\": \"romance\", \"rating\": 7.9},\n]\n```\n\nExample: `GET /movies?genre=sci-fi&min_rating=8.0` → `[{\"title\": \"Dune\", \"genre\": \"sci-fi\", \"rating\": 8.5}]`. `GET /movies?min_rating=abc` should return a 422.",
+      "solution": "from fastapi import FastAPI\n\napp = FastAPI()\n\nMOVIES = [\n    {\"title\": \"Dune\", \"genre\": \"sci-fi\", \"rating\": 8.5},\n    {\"title\": \"Heat\", \"genre\": \"crime\", \"rating\": 8.2},\n    {\"title\": \"Amélie\", \"genre\": \"romance\", \"rating\": 7.9},\n]\n\n\n@app.get(\"/movies\")\ndef list_movies(genre: str | None = None, min_rating: float = 0.0):\n    return [\n        m for m in MOVIES\n        if (genre is None or m[\"genre\"] == genre)\n        and m[\"rating\"] >= min_rating\n    ]\n",
+      "starterCode": "from fastapi import FastAPI\n\napp = FastAPI()\n\nMOVIES = [\n    {\"title\": \"Dune\", \"genre\": \"sci-fi\", \"rating\": 8.5},\n    {\"title\": \"Heat\", \"genre\": \"crime\", \"rating\": 8.2},\n    {\"title\": \"Amélie\", \"genre\": \"romance\", \"rating\": 7.9},\n]\n",
+      "title": "Query params and validation"
+    },
+    {
+      "difficulty": "medium",
+      "hints": [
+        "A Pydantic-typed parameter is parsed from the JSON body automatically.",
+        "`Field(ge=0.0, le=10.0)` constrains the rating range.",
+        "`movie.model_dump()` converts the model back to a plain dict."
+      ],
+      "id": "capstone-ex3",
+      "prompt": "Add a `POST /movies` endpoint accepting a JSON body validated by this Pydantic model, appending the movie to `MOVIES`, and returning the created movie with status 201:\n\n```python\nfrom pydantic import BaseModel, Field\n\nclass MovieIn(BaseModel):\n    title: str\n    genre: str\n    rating: float = Field(ge=0.0, le=10.0)\n```\n\nExample: `POST /movies` with `{\"title\": \"Alien\", \"genre\": \"sci-fi\", \"rating\": 8.4}` → 201 and the movie echoed back. A rating of `99` must return 422.",
+      "solution": "from fastapi import FastAPI\nfrom pydantic import BaseModel, Field\n\napp = FastAPI()\n\nMOVIES = []\n\n\nclass MovieIn(BaseModel):\n    title: str\n    genre: str\n    rating: float = Field(ge=0.0, le=10.0)\n\n\n@app.post(\"/movies\", status_code=201)\ndef create_movie(movie: MovieIn):\n    data = movie.model_dump()\n    MOVIES.append(data)\n    return data\n",
+      "starterCode": "from fastapi import FastAPI\nfrom pydantic import BaseModel, Field\n\napp = FastAPI()\n\nMOVIES = []\n\n\nclass MovieIn(BaseModel):\n    title: str\n    genre: str\n    rating: float = Field(ge=0.0, le=10.0)\n",
+      "title": "POST with a Pydantic model"
+    },
+    {
+      "difficulty": "hard",
+      "hints": [
+        "Separate models for create (title required), update (all optional), and output.",
+        "A helper that raises 404 keeps the endpoints DRY.",
+        "PATCH: use `model_dump(exclude_unset=True)` so absent fields aren't overwritten."
+      ],
+      "id": "capstone-ex4",
+      "prompt": "Build a task-tracker REST API in a file called `tasks_api.py`. This is your capstone — design the implementation yourself from this spec.\n\n## Spec\nManage tasks, each with: `id` (int, auto-assigned), `title` (str, required), `done` (bool, default False).\n\n## Endpoints\n1. `POST /tasks` — body: `{\"title\": \"...\"}` → 201, returns the created task.\n2. `GET /tasks` — query param `done` (optional bool) filters by completion → 200, returns list.\n3. `GET /tasks/{task_id}` → 200 with the task, or 404 if missing.\n4. `PATCH /tasks/{task_id}` — body may contain `title` and/or `done` → 200 with updated task, or 404.\n5. `DELETE /tasks/{task_id}` → 204 on success, 404 if missing.\n\n## Acceptance criteria\n- All five endpoints work via `/docs` (\"Try it out\").\n- Creating a task without a title returns 422.\n- `GET /tasks/999` on an empty store returns 404 with a `detail` message.\n- Patching only `{\"done\": true}` leaves the title unchanged.\n- Deleting then re-fetching the same id returns 404.\n- Code is organized with Pydantic models for input/output and `HTTPException` for errors.\n\nA reference solution is provided — attempt it yourself first, then compare.",
+      "solution": "from fastapi import FastAPI, HTTPException\nfrom pydantic import BaseModel\n\napp = FastAPI()\n\n\nclass Task(BaseModel):\n    id: int\n    title: str\n    done: bool = False\n\n\nclass TaskCreate(BaseModel):\n    title: str\n\n\nclass TaskUpdate(BaseModel):\n    title: str | None = None\n    done: bool | None = None\n\n\ntasks: dict[int, Task] = {}\nnext_id = 1\n\n\ndef get_task_or_404(task_id: int) -> Task:\n    if task_id not in tasks:\n        raise HTTPException(status_code=404, detail=\"task not found\")\n    return tasks[task_id]\n\n\n@app.post(\"/tasks\", status_code=201, response_model=Task)\ndef create_task(payload: TaskCreate):\n    global next_id\n    task = Task(id=next_id, title=payload.title)\n    tasks[next_id] = task\n    next_id += 1\n    return task\n\n\n@app.get(\"/tasks\", response_model=list[Task])\ndef list_tasks(done: bool | None = None):\n    return [t for t in tasks.values() if done is None or t.done == done]\n\n\n@app.get(\"/tasks/{task_id}\", response_model=Task)\ndef get_task(task_id: int):\n    return get_task_or_404(task_id)\n\n\n@app.patch(\"/tasks/{task_id}\", response_model=Task)\ndef update_task(task_id: int, payload: TaskUpdate):\n    task = get_task_or_404(task_id)\n    updates = payload.model_dump(exclude_unset=True)\n    updated = task.model_copy(update=updates)\n    tasks[task_id] = updated\n    return updated\n\n\n@app.delete(\"/tasks/{task_id}\", status_code=204)\ndef delete_task(task_id: int):\n    get_task_or_404(task_id)\n    del tasks[task_id]\n    return None\n",
+      "starterCode": "from fastapi import FastAPI\n\napp = FastAPI()\n",
+      "title": "Capstone project: task tracker API"
+    }
+  ],
+  "id": "capstone",
+  "lessons": [
+    {
+      "body": "# FastAPI quickstart\n\nFastAPI is the modern Python web framework for APIs — you describe routes as decorated functions, and it handles JSON serialization, validation, and interactive docs. Install it with its server:\n\n```python\n# terminal:\n# pip install fastapi uvicorn\n```\n\n```python\n# main.py\nfrom fastapi import FastAPI\n\napp = FastAPI()\n\n@app.get(\"/\")\ndef home():\n    return {\"message\": \"hello from FastAPI\"}\n\n@app.get(\"/health\")\ndef health():\n    return {\"status\": \"ok\"}\n```\n\nRun it with uvicorn: `uvicorn main:app --reload`. Then open http://127.0.0.1:8000/docs — FastAPI generates interactive API documentation from your code automatically. Try the endpoints right in the browser.\n\n```python\n# terminal:\n# uvicorn main:app --reload\n# -> INFO:     Uvicorn running on http://127.0.0.1:8000\n```\n\nWhat just happened: `@app.get(\"/\")` registered `home()` as the handler for GET requests to `/`. Returning a dict from a handler automatically becomes a JSON response — no manual serialization. The `--reload` flag restarts the server when your code changes, which is what you want during development.",
+      "id": "capstone-fastapi",
+      "jsNote": "Java: FastAPI is like Spring Boot for APIs — `@app.get(\"/\")` is `@GetMapping(\"/\")`, and the auto-generated `/docs` is what SpringDoc/OpenAPI gives you. The difference: no annotation-on-DTO ceremony for simple cases, and startup is instant. JavaScript: this is Express (`app.get('/', (req, res) => res.json(...))`) with TypeScript-style validation built in instead of bolted on via zod — the type hints ARE the validation schema.",
+      "keyPoints": [
+        "`pip install fastapi uvicorn`; define routes with `@app.get(...)` / `@app.post(...)`.",
+        "Returning a dict from a handler produces a JSON response automatically.",
+        "Run with `uvicorn main:app --reload`; interactive docs live at `/docs`.",
+        "`--reload` is for development only — never in production."
+      ],
+      "minutes": 12,
+      "title": "FastAPI quickstart"
+    },
+    {
+      "body": "# Routes, path and query parameters\n\nDynamic segments in the path become function parameters. Type hints do double duty: they document the type AND FastAPI validates/coerces the input — a non-integer where `int` is expected returns a 422 error automatically.\n\n```python\nfrom fastapi import FastAPI\n\napp = FastAPI()\n\n@app.get(\"/users/{user_id}\")\ndef get_user(user_id: int):\n    return {\"user_id\": user_id}\n\n@app.get(\"/search\")\ndef search(q: str, limit: int = 10):\n    return {\"query\": q, \"limit\": limit}\n```\n\n`GET /users/42` → `{\"user_id\": 42}`. `GET /users/abc` → 422 validation error, with a JSON body explaining exactly what failed. Query parameters are just function parameters that aren't in the path — defaults make them optional.\n\n```python\nfrom pydantic import BaseModel\n\nclass Item(BaseModel):\n    name: str\n    price: float\n    in_stock: bool = True\n\n@app.post(\"/items\")\ndef create_item(item: Item):\n    return {\"created\": item.name, \"price\": item.price}\n```\n\nFor request bodies, define a Pydantic model: FastAPI parses the JSON body into it, validates every field, and returns 422 with details on failure. This is the same pattern for every POST/PUT endpoint you'll write.",
+      "id": "capstone-routes",
+      "jsNote": "Java: `{user_id}` with `int` coercion is like `@PathVariable int userId` in Spring — same idea, but FastAPI derives it from the type hint instead of an annotation. Pydantic models are validated DTOs/request records, minus the annotation stack (`@NotNull`, `@Min`) — the field types themselves are the constraints. JavaScript: path params are Express's `req.params`, query is `req.query` (always strings — note FastAPI coerces to `int` for you), and Pydantic is zod with the schema inferred from types.",
+      "keyPoints": [
+        "`{param}` in the path becomes a function argument; type hints trigger automatic validation.",
+        "Query params are function args not present in the path; defaults make them optional.",
+        "Failed validation returns 422 with a detailed JSON error — no manual checks.",
+        "Pydantic `BaseModel` classes define and validate JSON request bodies."
+      ],
+      "minutes": 12,
+      "title": "Routes, path and query parameters"
+    },
+    {
+      "body": "# Responses, status codes, and errors\n\nReturning a dict gives you a 200 with JSON. For anything else — 201 Created, 404 Not Found — be explicit. `HTTPException` is how you signal errors; FastAPI turns it into a proper JSON error response.\n\n```python\nfrom fastapi import FastAPI, HTTPException\n\napp = FastAPI()\nitems = {1: {\"name\": \"keyboard\", \"price\": 80}}\n\n@app.get(\"/items/{item_id}\")\ndef get_item(item_id: int):\n    if item_id not in items:\n        raise HTTPException(status_code=404, detail=\"item not found\")\n    return items[item_id]\n\n@app.post(\"/items\", status_code=201)\ndef create_item(name: str, price: float):\n    new_id = max(items) + 1\n    items[new_id] = {\"name\": name, \"price\": price}\n    return {\"id\": new_id, **items[new_id]}\n```\n\n`status_code=201` on the decorator sets the success code. `HTTPException` carries the status and a `detail` message — the client gets `{\"detail\": \"item not found\"}` with a 404, which is exactly what API consumers expect.\n\n```python\nfrom pydantic import BaseModel\n\nclass ItemOut(BaseModel):\n    id: int\n    name: str\n    price: float\n\n@app.get(\"/items/{item_id}\", response_model=ItemOut)\ndef get_item_typed(item_id: int):\n    ...\n```\n\n`response_model` filters your return value through the model — extra fields are stripped, types are validated. It doubles as documentation: the `/docs` page shows the exact response shape. Use it on every endpoint once the API matters.",
+      "id": "capstone-json",
+      "jsNote": "Java: `HTTPException` is like Spring's `ResponseStatusException` — same pattern of throwing to produce an error response. `response_model` is like a response DTO that also strips unknown fields (Jackson wouldn't strip unless configured). JavaScript: this is `res.status(404).json({detail: ...})` in Express, except the framework owns the error format so every endpoint is consistent for free.",
+      "keyPoints": [
+        "Dict returns become 200 JSON; set other success codes with `status_code=` on the decorator.",
+        "`raise HTTPException(status_code=..., detail=...)` for errors — clients get JSON error bodies.",
+        "`response_model=` validates/filters responses and documents the shape in `/docs`.",
+        "Keep an in-memory dict for learning; swap in a real database when it stops being a toy."
+      ],
+      "minutes": 10,
+      "title": "Responses, status codes, and errors"
+    },
+    {
+      "body": "# Your capstone project and where to go next\n\nTime to put the whole arc together. Your capstone is a small but real REST API — a task tracker — built with FastAPI. The spec is the last exercise of this module; it has acceptance criteria instead of a walkthrough, because at this point you should be designing the implementation yourself.\n\n## What \"done\" looks like for this track\n\n- You can read any Python file and explain what it does.\n- You can write Python from memory: scripts, functions, classes, tests.\n- You know where to look when you're stuck: docs, tracebacks, pytest output.\n- You've shipped one real thing: the capstone API.\n\n## Where to go next, by career goal\n\n1. Backend interviews: add SQLAlchemy + a real database (SQLite first, Postgres next) to your capstone, then learn authentication (OAuth2/JWT via FastAPI's security utilities).\n2. Data-flavored roles: numpy and pandas next — the data-structures module you finished maps directly onto DataFrames.\n3. Generalist depth: async Python (`async`/`await`, `httpx`), packaging your own libraries, and reading one serious open-source codebase (FastAPI's own source is approachable).\n4. Keep the habit: one small script a week. Automation is where Python pays rent — the file I/O, pathlib, and requests skills from this track are the toolkit.\n\n## A peek at what's next\n\nTwo small tastes of where the track leads. First, swapping the in-memory dict for a real database with SQLAlchemy — your `Task` Pydantic model stays, and a table model joins it:\n\n```python\nfrom sqlalchemy import Boolean, Column, Integer, String\nfrom sqlalchemy.orm import declarative_base\n\nBase = declarative_base()\n\nclass TaskRow(Base):\n    __tablename__ = \"tasks\"\n    id = Column(Integer, primary_key=True)\n    title = Column(String, nullable=False)\n    done = Column(Boolean, default=False)\n```\n\nSecond, protecting endpoints once auth matters — a dependency that runs before the handler:\n\n```python\nfrom fastapi import Depends, HTTPException, status\n\ndef require_token(token: str = \"\"):\n    if token != \"secret\":\n        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)\n    return token\n\n@app.get(\"/admin/stats\")\ndef stats(_: str = Depends(require_token)):\n    return {\"tasks\": len(tasks)}\n```\n\nThe fastest way to stay sharp is to use Python at work: the next time you'd write a Node script for a one-off task — renaming files, hitting an API, transforming data — write it in Python instead.",
+      "id": "capstone-project",
+      "jsNote": "Java: the natural next step after this track is the Spring/FastAPI comparison — you already know the concepts (DI is FastAPI's `Depends`, JPA is SQLAlchemy); it's mostly vocabulary now. JavaScript: keep both sharp by noticing where each wins — Python for scripting, data, and API speed of development; Node where your frontend toolchain already lives. Being bilingual here is the career asset.",
+      "keyPoints": [
+        "The capstone (next exercise) is a task-tracker API — build it from the spec, no walkthrough.",
+        "Done = read anything, write from memory, debug via tracebacks/tests, ship one real project.",
+        "Next by goal: SQLAlchemy + auth for backend roles; numpy/pandas for data; async + packaging for depth.",
+        "Retention strategy: replace one-off Node scripts with Python scripts at work."
+      ],
+      "minutes": 10,
+      "title": "Your capstone project and where to go next"
+    }
+  ],
+  "tagline": "Build a real REST API with FastAPI, then ship your capstone project.",
+  "title": "Capstone: Build a Tiny API"
+}

@@ -1,0 +1,88 @@
+{
+  "estimatedMinutes": 45,
+  "exercises": [
+    {
+      "difficulty": "easy",
+      "hints": [
+        "The traceback points at line 4: `name[0]` fails when `name` is `None`.",
+        "`'NoneType' object is not subscriptable` means you indexed `None`.",
+        "Skip `None` entries with `continue` before touching `name[0]`."
+      ],
+      "id": "testing-ex1",
+      "prompt": "This function has a bug. Read the traceback, find the bug, and write the fixed function.\n\n```python\ndef initials(names):\n    result = []\n    for name in names:\n        result.append(name[0].upper())\n    return \", \".join(result)\n\ninitials([\"amy\", \"bo\", None])\n# Traceback (most recent call last):\n#   File \"<stdin>\", line 1, in <module>\n#   File \"<stdin>\", line 4, in initials\n# TypeError: 'NoneType' object is not subscriptable\n```\n\nFix it so `None` entries are skipped: `initials([\"amy\", \"bo\", None])` should return `\"A, B\"`.",
+      "solution": "def initials(names):\n    result = []\n    for name in names:\n        if name is None:\n            continue\n        result.append(name[0].upper())\n    return \", \".join(result)\n",
+      "starterCode": "def initials(names):\n    result = []\n    for name in names:\n        result.append(name[0].upper())\n    return \", \".join(result)\n",
+      "title": "Read the traceback"
+    },
+    {
+      "difficulty": "medium",
+      "hints": [
+        "Each parametrize entry is an `(input, expected)` tuple.",
+        "The empty string reads as a palindrome — `cleaned == cleaned[::-1]` is `True`.",
+        "Name the test function `test_*`, and keep the assert plain."
+      ],
+      "id": "testing-ex2",
+      "prompt": "Given this function:\n\n```python\ndef is_palindrome(s):\n    cleaned = \"\".join(ch.lower() for ch in s if ch.isalnum())\n    return cleaned == cleaned[::-1]\n```\n\nWrite a pytest file testing it with `@pytest.mark.parametrize`, covering at least: a simple palindrome (`\"racecar\"`), a non-palindrome (`\"hello\"`), mixed case (`\"RaceCar\"`), a phrase with spaces/punctuation (`\"A man, a plan, a canal: Panama\"`), and the empty string. Write the complete test file.",
+      "solution": "import pytest\nfrom pal import is_palindrome\n\n\n@pytest.mark.parametrize(\"s,expected\", [\n    (\"racecar\", True),\n    (\"hello\", False),\n    (\"RaceCar\", True),\n    (\"A man, a plan, a canal: Panama\", True),\n    (\"\", True),\n])\ndef test_is_palindrome(s, expected):\n    assert is_palindrome(s) == expected\n",
+      "starterCode": "import pytest\nfrom pal import is_palindrome\n",
+      "title": "Write parametrized tests"
+    },
+    {
+      "difficulty": "medium",
+      "hints": [
+        "For `[1, 2, 3, 4]`, the middle pair is at indices 1 and 2 — check what the code actually picks.",
+        "`n // 2` for `n=4` is 2; the two middle elements are at `n//2 - 1` and `n//2`.",
+        "What happens with `median([])`? An explicit `ValueError` beats an `IndexError`."
+      ],
+      "id": "testing-ex3",
+      "prompt": "This function should return the median of a list of numbers, but it has TWO bugs. Write the corrected function.\n\n```python\ndef median(nums):\n    s = sorted(nums)\n    n = len(s)\n    if n % 2 == 1:\n        return s[n // 2]\n    return (s[n // 2] + s[n // 2 + 1]) / 2\n```\n\nRequirements: `median([3, 1, 2]) == 2`, `median([4, 1, 3, 2]) == 2.5`, `median([5]) == 5`, and `median([])` raises `ValueError`. Hint: trace the even-length branch by hand with `[1, 2, 3, 4]`.",
+      "solution": "def median(nums):\n    if not nums:\n        raise ValueError(\"median of empty list is undefined\")\n    s = sorted(nums)\n    n = len(s)\n    if n % 2 == 1:\n        return s[n // 2]\n    return (s[n // 2 - 1] + s[n // 2]) / 2\n",
+      "starterCode": "def median(nums):\n    s = sorted(nums)\n    n = len(s)\n    if n % 2 == 1:\n        return s[n // 2]\n    return (s[n // 2] + s[n // 2 + 1]) / 2\n",
+      "title": "Test-drive a fix"
+    }
+  ],
+  "id": "testing",
+  "lessons": [
+    {
+      "body": "# assert and reading tracebacks\n\n`assert condition, message` is Python's built-in sanity check: if the condition is false, it raises `AssertionError` with your message. Use asserts for invariants — things that must be true if your code is correct — not for validating user input (use real exceptions for that; asserts can be disabled with `python -O`).\n\n```python\ndef mean(numbers):\n    assert len(numbers) > 0, \"mean of empty list is undefined\"\n    return sum(numbers) / len(numbers)\n\nmean([])   # AssertionError: mean of empty list is undefined\n```\n\nWhen something fails, Python prints a traceback. Read it bottom-up: the last line is the error type and message, and the stack above shows the call chain that got there, most recent call last.\n\n```python\ndef greet(name):\n    return \"Hello, \" + name\n\ngreet(42)\n# Traceback (most recent call last):\n#   File \"<stdin>\", line 1, in <module>\n# TypeError: can only concatenate str (not \"int\") to str\n```\n\nThe anatomy: file/line/function for each frame, then `ErrorType: message`. The most common errors you'll meet: `TypeError` (wrong type for an operation), `ValueError` (right type, bad value — `int(\"abc\")`), `KeyError`/`IndexError` (missing dict key / list index), `AttributeError` (typo'd attribute or method), `NameError` (typo'd variable), `ModuleNotFoundError`.\n\n```python\n# Learn to read these at a glance:\n# KeyError: 'email'        -> dict is missing that key; check what's actually in it\n# AttributeError: 'NoneType' object has no attribute 'strip'\n#                          -> something returned None; find where\n```\n\nWhen debugging, the fastest loop is: reproduce minimally, read the last traceback line, print (or `breakpoint()`) the actual values at that line. Most bugs die within three iterations of that loop.",
+      "id": "testing-assert",
+      "jsNote": "Java: `assert` exists in Java too (`assert x > 0;`) with the same 'disabled in production' caveat — but Java devs more often meet it as JUnit assertions, which is the next lesson's territory. The big difference: Java gives you checked exceptions and compiler errors; Python gives you tracebacks at runtime, so reading them fast is a core skill, not a nice-to-have. JavaScript: `console.assert()` is the equivalent, equally easy to ignore — but Python's actually raises, which makes it useful in tests.",
+      "keyPoints": [
+        "`assert` checks invariants during development; don't use it for user-input validation.",
+        "Read tracebacks bottom-up: error type + message last, call chain above.",
+        "Learn the common errors by sight: TypeError, ValueError, KeyError, IndexError, AttributeError, NameError.",
+        "Debug loop: minimal repro → read the last line → inspect actual values → fix."
+      ],
+      "minutes": 10,
+      "title": "assert and reading tracebacks"
+    },
+    {
+      "body": "# pytest basics\n\npytest is the standard test runner. Install it (`pip install pytest`), put test functions in files named `test_*.py`, and run `pytest`. Any function named `test_*` with plain `assert` statements is a test — no boilerplate, no classes required.\n\n```python\n# test_math_utils.py\nfrom math_utils import add\n\ndef test_add_positive():\n    assert add(2, 3) == 5\n\ndef test_add_negative():\n    assert add(-1, -1) == -2\n```\n\n```python\n# terminal:\n# pytest                                  # discovers and runs all test_*.py\n# pytest -v                               # verbose: one line per test\n# pytest test_math_utils.py::test_add_positive   # run a single test\n```\n\n`@pytest.mark.parametrize` runs one test body over many inputs — it's how you test a function against a table of cases without copy-pasting.\n\n```python\nimport pytest\nfrom math_utils import add\n\n@pytest.mark.parametrize(\"a,b,expected\", [\n    (2, 3, 5),\n    (-1, -1, -2),\n    (0, 0, 0),\n])\ndef test_add(a, b, expected):\n    assert add(a, b) == expected\n```\n\nFixtures (`@pytest.fixture`) provide reusable setup — a fresh object, a temp file, a test database — injected by parameter name. And `pytest.raises` asserts that code raises the right exception.\n\n```python\nimport pytest\n\n@pytest.fixture\ndef cart():\n    return []          # each test gets a FRESH list\n\ndef test_cart_starts_empty(cart):\n    assert cart == []\n\ndef test_divide_by_zero():\n    with pytest.raises(ZeroDivisionError):\n        1 / 0\n```\n\nRun tests early and often — before you push, and while you're developing (`pytest -x` stops at the first failure). A test suite you actually run beats a comprehensive one you don't.",
+      "id": "testing-pytest",
+      "jsNote": "Java: pytest is JUnit 5 with dramatically less ceremony — no annotations on the class, no `assertEquals`, just functions and `assert`. `@parametrize` is `@ParameterizedTest` + `@CsvSource`; fixtures are `@BeforeEach` setup methods, except they're injected as parameters instead of instance state. JavaScript: pytest is Jest/Vitest for Python — `test_*` functions are `test(...)` blocks, `parametrize` is `test.each`, and fixtures are `beforeEach` without the shared-mutable-state footgun.",
+      "keyPoints": [
+        "Test files: `test_*.py`; test functions: `test_*`; assertions are plain `assert`.",
+        "`pytest.mark.parametrize` runs one test over many input cases.",
+        "`@pytest.fixture` injects fresh setup per test; `pytest.raises` checks exceptions.",
+        "Run `pytest` often; `pytest -x` stops at first failure, `-v` shows each test."
+      ],
+      "minutes": 12,
+      "title": "pytest basics"
+    },
+    {
+      "body": "# Debugging strategies\n\nMost debugging is systematic, not inspired. When a test fails or the program misbehaves, work the list: reproduce, isolate, inspect, hypothesize, verify.\n\n```python\n# 1. REPRODUCE minimally — shrink the failing case until it's tiny\n# 2. ISOLATE — which function? which line? (the traceback tells you)\n# 3. INSPECT — print the actual values, or drop into the debugger:\n\ndef total(prices):\n    result = 0\n    for p in prices:\n        breakpoint()      # drops you into pdb: inspect p, result, step with n\n        result += p\n    return result\n```\n\n`breakpoint()` is Python's built-in debugger entry — better than print-debugging because you can inspect anything and step forward. In pdb: `n` (next line), `c` (continue), `p <expr>` (print expression), `q` (quit). For quick checks, an f-string print of the suspicious values is still the fastest tool.\n\n```python\n# print-debugging, done right: show names AND values\nprint(f\"prices={prices!r}, result={result!r}\")\n# the !r uses repr() — reveals the difference between \"3\" and 3\n```\n\nTwo more habits that prevent bugs from existing: write the test first when the behavior is clear (you'll catch misunderstandings before they fossilize into code), and when you're stuck for more than 20 minutes, explain the problem out loud — to a person, a rubber duck, or an empty document. Articulating it forces you to check each assumption, and the bug is usually an unchecked assumption.",
+      "id": "testing-debug",
+      "jsNote": "Java: `breakpoint()` is like dropping a breakpoint in IntelliJ — except it's one line of code and works anywhere, no IDE needed. pdb commands map to IDE debugger buttons (`n` = step over, `c` = resume). JavaScript: `breakpoint()` is literally `debugger;` — same concept, and both beat `console.log` / `print` archaeology once you build the habit.",
+      "keyPoints": [
+        "Debug systematically: reproduce minimally → isolate → inspect values → hypothesize → verify.",
+        "`breakpoint()` drops into pdb; `n`/`c`/`p`/`q` are the only commands you need at first.",
+        "`f\"{var!r}\"` prints the repr — shows type-level differences prints hide.",
+        "Stuck >20 min? Explain the problem out loud; the bug is usually an unchecked assumption."
+      ],
+      "minutes": 10,
+      "title": "Debugging strategies"
+    }
+  ],
+  "tagline": "assert, pytest, and systematic debugging.",
+  "title": "Testing & Debugging"
+}
