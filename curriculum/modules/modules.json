@@ -1,0 +1,101 @@
+{
+  "estimatedMinutes": 60,
+  "exercises": [
+    {
+      "difficulty": "easy",
+      "hints": [
+        "`Counter(...).most_common(n)` returns exactly the list shape you need.",
+        "`str.replace` in a loop over punctuation chars is the simplest cleanup.",
+        "Lowercase BEFORE stripping punctuation."
+      ],
+      "id": "modules-ex1",
+      "prompt": "Write a function `top_words(text, n)` that returns the `n` most common words in `text` as a list of `(word, count)` tuples, most common first. Lowercase everything and strip basic punctuation (`.`, `,`, `!`, `?`) so `\"Hello,\"` and `\"hello\"` count together.\n\nExample:\n```python\ntop_words(\"Hello, hello world! World.\", 2)\n# -> [('hello', 2), ('world', 2)]\n```\n\nUse `collections.Counter`.",
+      "solution": "from collections import Counter\n\n\ndef top_words(text, n):\n    cleaned = text.lower()\n    for punct in \".,!?\":\n        cleaned = cleaned.replace(punct, \"\")\n    return Counter(cleaned.split()).most_common(n)\n",
+      "starterCode": "from collections import Counter\n\n\ndef top_words(text, n):\n    pass\n",
+      "title": "Top words with Counter"
+    },
+    {
+      "difficulty": "medium",
+      "hints": [
+        "The guard checks whether `__name__` equals the string `\"__main__\"`.",
+        "Everything that should only happen when run directly goes inside the `if` block.",
+        "Test both ways: `python shout.py` AND `python -c \"import shout\"`."
+      ],
+      "id": "modules-ex2",
+      "prompt": "Create a file called `shout.py` containing a function `shout(text)` that returns the text uppercased with `\"!!!\"` appended. Add a `__name__ == \"__main__\"` guard so that running `python shout.py` prints `shout(\"hello\")`'s result, but `import shout` from another file prints nothing.\n\nVerify:\n```python\n# terminal: python shout.py     -> prints HELLO!!!\n# terminal: python -c \"import shout\"  -> prints nothing\n```\n\nWrite the complete file contents as your answer.",
+      "solution": "def shout(text):\n    return text.upper() + \"!!!\"\n\n\nif __name__ == \"__main__\":\n    print(shout(\"hello\"))\n",
+      "starterCode": "",
+      "title": "A silent-on-import module"
+    },
+    {
+      "difficulty": "medium",
+      "hints": [
+        "`importlib.util.find_spec(name)` returns `None` when nothing is found.",
+        "The spec's `.origin` attribute holds the file path.",
+        "This performs the lookup WITHOUT importing the module — no side effects."
+      ],
+      "id": "modules-ex3",
+      "prompt": "Write a function `module_path(name)` that returns the filesystem path Python would load for the module `name` (e.g. `\"json\"`, `\"math\"`), or `None` if the module can't be found.\n\nExample:\n```python\nmodule_path(\"json\")      # -> '.../json/__init__.py' (exact path varies by install)\nmodule_path(\"nope_xyz\")  # -> None\n```\n\nHint: `importlib.util.find_spec` does the lookup without importing.",
+      "solution": "import importlib.util\n\n\ndef module_path(name):\n    spec = importlib.util.find_spec(name)\n    if spec is None:\n        return None\n    return spec.origin\n",
+      "starterCode": "import importlib.util\n\n\ndef module_path(name):\n    pass\n",
+      "title": "Where does an import come from?"
+    }
+  ],
+  "id": "modules",
+  "lessons": [
+    {
+      "body": "# Imports and the module system\n\nAny `.py` file is a module. `import` loads it once and binds it to a name; `from ... import ...` pulls specific names out of it.\n\n```python\nimport math\nprint(math.sqrt(16))        # 4.0\n\nfrom math import sqrt, pi\nprint(sqrt(16), pi)         # 4.0 3.141592653589793\n\nimport math as m             # alias, common for long names\nfrom datetime import datetime as dt\n```\n\nWhen you `import x`, Python searches `sys.path` — roughly: the script's directory, then installed packages, then the standard library. That's why a file named `math.py` in your project would shadow the real `math` module and break everything: never name your files after standard-library modules.\n\n```python\nimport sys\nprint(sys.path)   # where Python looks for modules, in order\n```\n\nCircular imports (a imports b, b imports a) are the classic beginner trap. They usually mean the shared code belongs in a third module both can import. If you hit an `ImportError` that only happens in one import order, suspect a cycle.\n\n`from package import *` dumps every public name into your namespace. It's fine in an interactive session; in real code it hides where names come from and risks collisions. Prefer explicit imports — they're grep-able and honest about dependencies.",
+      "id": "modules-imports",
+      "jsNote": "Java: `import math` is like `import static java.lang.Math.*` except it doesn't pollute your namespace — you still say `math.sqrt()`. There's no classpath to configure; `sys.path` is the classpath and it includes your script's directory by default. JavaScript (ES modules): `import { sqrt } from './math.js'` looks similar, but Python imports resolve at runtime against `sys.path`, not at build time — and unlike ESM's live bindings, `from x import y` copies the reference at import time.",
+      "keyPoints": [
+        "Every `.py` file is a module; `import` runs it once and caches it in `sys.modules`.",
+        "`import x`, `from x import y`, `import x as z` — prefer explicit over `import *`.",
+        "Python searches `sys.path` (script dir, installed packages, stdlib); don't name files after stdlib modules.",
+        "Circular imports signal that shared code needs its own module."
+      ],
+      "minutes": 10,
+      "title": "Imports and the module system"
+    },
+    {
+      "body": "# The standard library tour\n\nPython ships with \"batteries included\": a large standard library covering most everyday needs without installing anything. You won't memorize it — you'll learn to recognize which drawer to open.\n\n```python\nfrom datetime import datetime, timedelta\n\nnow = datetime.now()\nprint(now.strftime(\"%Y-%m-%d\"))        # 2026-10-08\ndeadline = now + timedelta(days=7)     # date arithmetic just works\n```\n\nModules you'll reach for constantly: `os` and `sys` (environment, argv, exit codes), `json` (you met it in File I/O), `re` (regular expressions), `math`/`statistics`, `random`, `collections` (`Counter`, `defaultdict`, `deque`), `itertools` (you'll meet it properly in Intermediate Python), and `dataclasses`.\n\n```python\nfrom collections import Counter, defaultdict\n\nvotes = [\"a\", \"b\", \"a\", \"c\", \"a\", \"b\"]\nprint(Counter(votes))            # Counter({'a': 3, 'b': 2, 'c': 1})\n\ngroups = defaultdict(list)       # missing keys auto-create an empty list\nfor name, team in [(\"amy\", \"red\"), (\"bo\", \"blue\"), (\"cy\", \"red\")]:\n    groups[team].append(name)\nprint(dict(groups))             # {'red': ['amy', 'cy'], 'blue': ['bo']}\n```\n\n`Counter` and `defaultdict` deserve special attention because they eliminate the tedious \"check if the key exists first\" pattern that litters beginner code. Whenever you catch yourself writing `if key not in d: d[key] = ...`, there's probably a stdlib tool for it.\n\nThe docs at docs.python.org/3/library are the reference you'll actually use in practice. The skill isn't memorization — it's knowing the library is big enough that you check it before writing your own version.",
+      "id": "modules-stdlib",
+      "jsNote": "Java: the stdlib is the JDK class library, but flatter — one `import` per module instead of hunting through `java.util` vs `java.time` vs `java.nio`. `Counter` is a multiset (Guava's `Multiset`); `defaultdict` is `Map.computeIfAbsent` as a data structure. JavaScript: Node's built-ins (`fs`, `path`) play this role, but they're far thinner — Python's stdlib is a genuine selling point of the language.",
+      "keyPoints": [
+        "The stdlib covers datetimes, OS interaction, regex, math, randomness, and collections — check it before reinventing.",
+        "`datetime` + `timedelta` make date math trivial.",
+        "`Counter` and `defaultdict` remove the manual \"initialize the key first\" dance.",
+        "docs.python.org/3/library is the reference; the skill is knowing what to look up."
+      ],
+      "minutes": 10,
+      "title": "The standard library tour"
+    },
+    {
+      "body": "# pip and virtual environments\n\nThe standard library doesn't cover everything, so Python has pip (the package installer) and PyPI (the package index). `pip install requests` fetches and installs a package.\n\n```python\n# terminal, not Python:\n# pip install requests\n```\n\n```python\nimport requests\nr = requests.get(\"https://api.github.com\")\nprint(r.status_code)   # 200\nprint(r.json()[\"current_user_url\"])\n```\n\nNever install packages globally if you can avoid it. A virtual environment is an isolated Python installation per project — its own packages, its own versions — so project A's `requests==2.28` never fights project B's `requests==2.31`.\n\n```python\n# terminal:\n# python3 -m venv .venv        # create the environment in .venv/\n# source .venv/bin/activate    # activate it (prompt shows (.venv))\n# pip install requests         # now installs INTO .venv, not globally\n# pip freeze > requirements.txt  # snapshot exact versions\n# deactivate                   # leave the environment\n```\n\n`requirements.txt` is the contract: anyone who clones your project runs `pip install -r requirements.txt` inside a fresh venv and gets your exact dependencies. Commit it; don't commit `.venv/` itself (it's big and machine-specific — add it to `.gitignore`).\n\nThe failure mode this prevents is real: two projects needing two versions of one library, or a tutorial's code breaking because your global environment drifted. One venv per project, created at project start, is the habit.",
+      "id": "modules-pip-venv",
+      "jsNote": "Java: pip is Maven Central/Gradle's dependency step combined — but there's no `pom.xml`; `requirements.txt` is the flat list of pinned versions. A venv is per-project isolation the way Maven's local repo tries to be, except it also isolates the interpreter itself. JavaScript: pip = npm, PyPI = npm registry, `requirements.txt` is roughly `package.json` dependencies (flat, no lockfile semantics — that's what `pip freeze` output or poetry adds), and a venv is exactly `node_modules` isolation done at the interpreter level.",
+      "keyPoints": [
+        "`pip install <package>` installs from PyPI; `pip install -r requirements.txt` reproduces an environment.",
+        "A venv (`.venv`) isolates a project's packages — one per project.",
+        "Activate with `source .venv/bin/activate`; snapshot with `pip freeze > requirements.txt`.",
+        "Commit `requirements.txt`, never commit `.venv/` (gitignore it)."
+      ],
+      "minutes": 12,
+      "title": "pip and virtual environments"
+    },
+    {
+      "body": "# Scripts, __main__, and project layout\n\nA Python file has two jobs it might do: be imported as a module, or be run as a script. The `__name__ == \"__main__\"` guard lets one file do both cleanly.\n\n```python\n# greet.py\ndef greet(name):\n    return f\"Hello, {name}!\"\n\nif __name__ == \"__main__\":\n    print(greet(\"world\"))\n```\n\nWhen you run `python greet.py`, Python sets `__name__` to `\"__main__\"` and the print executes. When another file does `import greet`, `__name__` is `\"greet\"`, so the print is skipped — importing stays side-effect free. Rule: a module should never do work on import; put executable code under the guard or inside functions.\n\n```python\n# main.py\nimport greet\nprint(greet.greet(\"raymond\"))   # importing greet printed nothing. Good.\n```\n\nA package is a directory with an `__init__.py` file (it can be empty) — it lets you organize modules into dotted namespaces like `myapp.utils`. A sane small-project layout looks like this:\n\n```python\n# myproject/\n#   pyproject.toml        # or requirements.txt — project metadata & deps\n#   README.md\n#   src/myapp/\n#       __init__.py\n#       __main__.py       # lets you run: python -m myapp\n#       utils.py\n#   tests/\n#       test_utils.py\n```\n\n`python -m myapp` runs the package's `__main__.py` with imports resolving correctly — it avoids the classic bug where running a script directly breaks its relative imports. When imports mysteriously fail, check two things: are you running from the project root, and would `-m` fix it.",
+      "id": "modules-structure",
+      "jsNote": "Java: the `__main__` guard is `public static void main(String[] args)` — the entry point — except in Python any module can have one, and the guard is what keeps it from firing on import. There's no `public`/`private` enforcement (see the OOP module for underscore conventions). JavaScript: this is the `if (require.main === module)` idiom from CommonJS — same idea, far more common in Python.",
+      "keyPoints": [
+        "`if __name__ == \"__main__\":` separates \"run as script\" from \"imported as module\".",
+        "Modules must be side-effect free on import — no top-level print/network/IO.",
+        "A package is a directory with `__init__.py`; `python -m pkg` runs its `__main__.py`.",
+        "Keep a boring, standard layout: source under `src/`, tests under `tests/`, deps pinned."
+      ],
+      "minutes": 10,
+      "title": "Scripts, __main__, and project layout"
+    }
+  ],
+  "tagline": "Imports, the standard library, pip, virtual environments, and sane project layout.",
+  "title": "Modules, Packages & Environments"
+}

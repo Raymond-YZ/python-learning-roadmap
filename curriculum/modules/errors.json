@@ -1,0 +1,98 @@
+{
+  "id": "errors",
+  "title": "Error Handling",
+  "tagline": "try/except/else/finally, specific catches, raising, custom exceptions, tracebacks.",
+  "estimatedMinutes": 60,
+  "lessons": [
+    {
+      "id": "errors-try",
+      "title": "try / except / else / finally",
+      "minutes": 12,
+      "body": "# try / except / else / finally\n\n```python\ntry:\n    age = int(input(\"Age: \"))\nexcept ValueError:\n    print(\"That's not a number!\")\nelse:\n    print(f\"Next year you'll be {age + 1}\")\nfinally:\n    print(\"Thanks for playing\")\n```\n\nEach clause has a job:\n\n- `try` — the risky code.\n- `except` — runs if that exception type is raised.\n- `else` — runs if the `try` block **succeeded** (no exception). Put success-path code here rather than inside `try`, so you don't accidentally catch exceptions from code that wasn't supposed to be risky.\n- `finally` — runs **no matter what**, for cleanup: closing files, releasing locks.\n\n## Keep try blocks small\n\n```python\n# risky: which line raised? you'd catch bugs in process() too\ntry:\n    data = fetch()\n    result = process(data)\nexcept ValueError:\n    print(\"bad value\")\n```\n\n```python\n# better: only the risky line is guarded\ntry:\n    data = fetch()\nexcept ValueError:\n    print(\"bad value\")\nelse:\n    result = process(data)\n```\n\nA wide `try` catches exceptions you never intended to handle — including bugs in your own logic. Wrap the minimum.",
+      "jsNote": "Java comparison: the structure maps directly — `try`/`except`/`finally` is `try`/`catch`/`finally`, and Python's `else` clause is the piece Java lacks (it's the success path, keeping `try` blocks minimal). The huge difference: **no checked exceptions** — nothing forces you to catch or declare anything, so exception handling in Python is 100% voluntary and convention-based. JavaScript comparison: same shape as `try`/`catch`/`finally`, but JS `catch` takes no exception type — Python's `except ValueError:` is selective where JS catches everything and you're left inspecting.",
+      "keyPoints": [
+        "`except` handles the error; `else` runs on success; `finally` always runs (cleanup)",
+        "Put success-path code in `else`, not in `try`",
+        "Keep `try` blocks small — wrap only the risky lines",
+        "No checked exceptions: catching is always voluntary, never compiler-enforced"
+      ]
+    },
+    {
+      "id": "errors-specific",
+      "title": "Catch Specific Exceptions",
+      "minutes": 12,
+      "body": "# Catch Specific Exceptions\n\nAlways catch the **narrowest** exception type that makes sense. A bare `except:` catches everything — including `KeyboardInterrupt` and real bugs — and hides them:\n\n```python\n# bad: hides every bug in the try block\ntry:\n    process(data)\nexcept:\n    print(\"something went wrong\")\n```\n\n```python\n# good: only the failure you anticipated\ntry:\n    age = int(raw)\nexcept ValueError:\n    print(f\"Can't parse age from {raw!r}\")\n```\n\nThe `{raw!r}` in the f-string shows the `repr` — quotes included — which is gold for debugging strings with invisible characters.\n\n## Catching multiple types\n\n```python\ntry:\n    value = int(raw) / divisor\nexcept ValueError:\n    print(\"not a number\")\nexcept ZeroDivisionError:\n    print(\"can't divide by zero\")\nexcept (TypeError, OverflowError) as e:\n    print(f\"unexpected: {e}\")\n```\n\nTuple several types in one clause when the handling is identical; `as e` binds the exception object for inspection or logging. Order matters — put subclasses before their parents, since the first matching clause wins.\n\n## The exception hierarchy is your friend\n\nCommon builtins to know: `ValueError` (right type, wrong value: `int(\"abc\")`), `TypeError` (wrong type: `\"a\" + 1`), `KeyError` (missing dict key), `IndexError` (list index out of range), `FileNotFoundError`, `ZeroDivisionError`. When unsure what a risky call raises, check the docs — or provoke it in the REPL and read the traceback.",
+      "jsNote": "Java comparison: `except ValueError:` is `catch (NumberFormatException e)` — typed catches, most-specific-first ordering, and all. But bare `except:` is *worse* than Java's `catch (Exception e)`: it also swallows `KeyboardInterrupt` and `SystemExit`, which aren't even `Exception` subclasses in Python (they inherit from `BaseException`). If you truly mean 'catch everything', write `except Exception:` — never bare `except:`. JavaScript comparison: JS `catch` can't filter by type at all, so Python's selective `except` clauses will feel like an upgrade — no `if (e instanceof ...)` chains needed.",
+      "keyPoints": [
+        "Catch the narrowest exception type — never bare `except:`",
+        "Tuple multiple types: `except (TypeError, ValueError):`; `as e` binds the object",
+        "Most-specific exception first — the first matching clause wins",
+        "Know the common builtins: `ValueError`, `TypeError`, `KeyError`, `IndexError`, `FileNotFoundError`"
+      ]
+    },
+    {
+      "id": "errors-raise",
+      "title": "Raising and Custom Exceptions",
+      "minutes": 10,
+      "body": "# Raising and Custom Exceptions\n\nRaise exceptions to signal contract violations — bad arguments, illegal states:\n\n```python\ndef withdraw(balance, amount):\n    if amount < 0:\n        raise ValueError(\"amount must be non-negative\")\n    if amount > balance:\n        raise ValueError(f\"insufficient funds: {balance} < {amount}\")\n    return balance - amount\n```\n\nRaise early, with a message that explains what was wrong and what was expected. The message is the first thing someone (often you, at 2 AM) reads in the traceback.\n\n## Custom exceptions\n\nDefine your own by subclassing `Exception` (or a more specific builtin):\n\n```python\nclass InsufficientFundsError(ValueError):\n    \"\"\"Raised when a withdrawal exceeds the balance.\"\"\"\n    pass\n\ndef withdraw(balance, amount):\n    if amount > balance:\n        raise InsufficientFundsError(f\"{amount} exceeds balance {balance}\")\n    return balance - amount\n```\n\nSubclassing `ValueError` means existing `except ValueError` handlers still catch it — your new type slots into the hierarchy instead of breaking it. Keep custom exceptions simple: a name, a docstring, and `pass` is often the whole class.\n\n## raise ... from\n\nWhen translating one exception into another, chain them so the original isn't lost:\n\n```python\nimport json\n\ntry:\n    config = json.loads(raw)\nexcept json.JSONDecodeError as e:\n    raise ValueError(\"config file is not valid JSON\") from e\n```\n\nThe traceback then shows both — the direct cause — instead of silently discarding the root failure.",
+      "jsNote": "Java comparison: `raise ValueError(\"...\")` is `throw new IllegalArgumentException(\"...\")`, and custom exceptions extend `Exception` just like Java — but with no checked exceptions, there's no `throws` clause and no compiler forcing callers to handle yours. Subclassing a builtin (like `ValueError`) mirrors extending a specific Java exception so existing catches keep working. `raise ... from e` is exception chaining, the equivalent of `new MyException(msg, cause)`. JavaScript comparison: `throw new Error(...)` maps directly; custom error classes extend `Error` in JS just as they extend `Exception` here.",
+      "keyPoints": [
+        "`raise` signals contract violations — fail fast with a clear message",
+        "Custom exceptions subclass `Exception` (or a fitting builtin); often just name + docstring + `pass`",
+        "Subclass builtins so existing handlers keep catching your type",
+        "`raise NewError(...) from e` chains exceptions instead of hiding the cause"
+      ]
+    },
+    {
+      "id": "errors-traceback",
+      "title": "Reading Tracebacks",
+      "minutes": 10,
+      "body": "# Reading Tracebacks\n\nWhen an uncaught exception kills your program, Python prints a traceback. Read it **bottom-up**: the last line is the actual error; the lines above are how you got there.\n\n```python\nTraceback (most recent call last):\n  File \"app.py\", line 12, in <module>\n    main()\n  File \"app.py\", line 8, in main\n    print_average([])\n  File \"app.py\", line 4, in print_average\n    print(sum(nums) / len(nums))\nZeroDivisionError: division by zero\n```\n\nThe anatomy:\n\n1. **Last line first:** `ZeroDivisionError: division by zero` — the exception type and message. This tells you *what* broke.\n2. **The frames above:** file, line number, function name, and the source line — this tells you *where*, unwinding from the outermost call (`main()`) down to the crash site.\n3. **\"most recent call last\":** the crash site is at the bottom, the entry point at the top — the reverse of Java's stack traces.\n\n## Debugging with the traceback\n\nReproduce the failing expression in the REPL with minimal input:\n\n```python\n>>> sum([]) / len([])\nZeroDivisionError: division by zero\n```\n\nWorkflow: read the last line (what), find the bottom frame (where), reproduce the failing expression in the REPL with minimal input, fix, re-run. Most tracebacks point at the exact line — trust them before reaching for a debugger. When the traceback crosses into library code, your bug is almost always in the *last frame that's your code* — the library is just where it surfaced.",
+      "jsNote": "Java comparison: you've read a thousand stack traces — the skills transfer, with one orientation flip: Java prints the *most recent call first* (crash at top), Python prints *most recent call last* (crash at bottom). In both, the real skill is the same: skip library frames, find the last frame that's *your* code, and start there. JavaScript comparison: same story — browser and Node traces put the crash at top like Java. Python's bottom-up order is the odd one out; once your eyes adjust, the 'last line = the error, bottom frame = your bug' habit works everywhere.",
+      "keyPoints": [
+        "Read bottom-up: last line is the error, bottom frame is the crash site",
+        "\"Most recent call last\" — reversed vs Java/JS stack traces",
+        "Your bug is usually the last frame that's *your* code, not library frames",
+        "Reproduce the failing expression in the REPL with minimal input, then fix"
+      ]
+    }
+  ],
+  "exercises": [
+    {
+      "id": "errors-ex1",
+      "title": "Safe Int",
+      "difficulty": "easy",
+      "prompt": "Write a function `safe_int(text)` that tries to convert `text` to an int. Return the int on success, or `None` if conversion fails.\n\nExample calls:\n\n```python\nsafe_int(\"42\")\n# returns: 42\nsafe_int(\"abc\")\n# returns: None\n```",
+      "starterCode": "def safe_int(text):\n    # TODO: try int(text), return None on ValueError\n    pass",
+      "solution": "def safe_int(text):\n    try:\n        return int(text)\n    except ValueError:\n        return None",
+      "hints": [
+        "`int()` raises `ValueError` on bad input",
+        "Catch it and return `None` instead"
+      ]
+    },
+    {
+      "id": "errors-ex2",
+      "title": "Guarded Withdrawal",
+      "difficulty": "medium",
+      "prompt": "Write a function `withdraw(balance, amount)` that returns the new balance, but raises `ValueError` with a clear message if `amount` is negative or exceeds `balance`.\n\nExample calls:\n\n```python\nwithdraw(100, 30)\n# returns: 70\nwithdraw(100, 200)\n# raises ValueError\n```",
+      "starterCode": "def withdraw(balance, amount):\n    # TODO: validate, then return the new balance\n    pass",
+      "solution": "def withdraw(balance, amount):\n    if amount < 0:\n        raise ValueError(\"amount must be non-negative\")\n    if amount > balance:\n        raise ValueError(f\"insufficient funds: {amount} > {balance}\")\n    return balance - amount",
+      "hints": [
+        "Validate *before* doing the math",
+        "Include the bad values in the message"
+      ]
+    },
+    {
+      "id": "errors-ex3",
+      "title": "Custom Exception",
+      "difficulty": "medium",
+      "prompt": "Define a custom exception `NegativeAgeError` (subclass of `ValueError`), then write a function `set_age(age)` that raises it if `age` is negative, and returns `age` otherwise.\n\nExample calls:\n\n```python\nset_age(30)\n# returns: 30\nset_age(-5)\n# raises NegativeAgeError\n```",
+      "starterCode": "class NegativeAgeError(ValueError):\n    # TODO: docstring + pass\n    pass\n\n\ndef set_age(age):\n    # TODO: raise NegativeAgeError for negative ages\n    pass",
+      "solution": "class NegativeAgeError(ValueError):\n    \"\"\"Raised when an age is negative.\"\"\"\n    pass\n\n\ndef set_age(age):\n    if age < 0:\n        raise NegativeAgeError(f\"age cannot be negative: {age}\")\n    return age",
+      "hints": [
+        "Subclass `ValueError` so existing `except ValueError` code still catches it",
+        "The class body can be just a docstring and `pass`"
+      ]
+    }
+  ]
+}

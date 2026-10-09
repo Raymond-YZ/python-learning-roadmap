@@ -1,0 +1,140 @@
+{
+  "estimatedMinutes": 90,
+  "exercises": [
+    {
+      "difficulty": "easy",
+      "hints": [
+        "Remember `self` as the first parameter of every method.",
+        "`withdraw` must check BEFORE subtracting.",
+        "Return the updated balance from both methods."
+      ],
+      "id": "oop-ex1",
+      "prompt": "Write a `BankAccount` class with:\n- `__init__(self, owner, balance=0)` storing both as attributes\n- `deposit(self, amount)` adding to balance and returning the new balance\n- `withdraw(self, amount)` subtracting from balance (raise `ValueError` if amount > balance) and returning the new balance\n\nExample:\n```python\nacct = BankAccount(\"amy\", 100)\nacct.deposit(50)    # -> 150\nacct.withdraw(30)   # -> 120\nacct.withdraw(500)  # raises ValueError\n```",
+      "solution": "class BankAccount:\n    def __init__(self, owner, balance=0):\n        self.owner = owner\n        self.balance = balance\n\n    def deposit(self, amount):\n        self.balance += amount\n        return self.balance\n\n    def withdraw(self, amount):\n        if amount > self.balance:\n            raise ValueError(\"insufficient funds\")\n        self.balance -= amount\n        return self.balance\n",
+      "starterCode": "class BankAccount:\n    pass\n",
+      "title": "A BankAccount class"
+    },
+    {
+      "difficulty": "medium",
+      "hints": [
+        "Split the string on `\":\"` to get the two parts.",
+        "Use `cls(...)` inside the classmethod, not the hardcoded class name.",
+        "`__str__` controls what `str(u)` and `print(u)` show."
+      ],
+      "id": "oop-ex2",
+      "prompt": "Write a `User` class with `__init__(self, name, email)`, plus a classmethod `from_string(cls, s)` that builds a `User` from a `\"name:email\"` string.\n\nExample:\n```python\nu = User.from_string(\"amy:amy@example.com\")\nu.name   # -> 'amy'\nu.email  # -> 'amy@example.com'\n```\n\nAlso add a `__str__` returning `\"amy <amy@example.com>\"`.",
+      "solution": "class User:\n    def __init__(self, name, email):\n        self.name = name\n        self.email = email\n\n    @classmethod\n    def from_string(cls, s):\n        name, email = s.split(\":\")\n        return cls(name, email)\n\n    def __str__(self):\n        return f\"{self.name} <{self.email}>\"\n",
+      "starterCode": "class User:\n    pass\n",
+      "title": "Alternative constructor with @classmethod"
+    },
+    {
+      "difficulty": "medium",
+      "hints": [
+        "`super().__init__(...)` runs the parent constructor.",
+        "`Rectangle.__init__` takes `w` and `h`, but must also set the name via `super()`.",
+        "`area()` is new — only `Rectangle` has it."
+      ],
+      "id": "oop-ex3",
+      "prompt": "Write a `Shape` base class with an `__init__(self, name)` and a `describe(self)` method returning `\"I am a <name>\"`. Then write `Rectangle(Shape)` with `__init__(self, w, h)` that calls `super().__init__(\"rectangle\")`, stores `w` and `h`, and adds an `area(self)` method returning `w * h`.\n\nExample:\n```python\nr = Rectangle(3, 4)\nr.describe()  # -> 'I am a rectangle'\nr.area()       # -> 12\n```",
+      "solution": "class Shape:\n    def __init__(self, name):\n        self.name = name\n\n    def describe(self):\n        return f\"I am a {self.name}\"\n\n\nclass Rectangle(Shape):\n    def __init__(self, w, h):\n        super().__init__(\"rectangle\")\n        self.w = w\n        self.h = h\n\n    def area(self):\n        return self.w * self.h\n",
+      "starterCode": "class Shape:\n    pass\n\n\nclass Rectangle(Shape):\n    pass\n",
+      "title": "Shapes with inheritance"
+    },
+    {
+      "difficulty": "medium",
+      "hints": [
+        "Format dollars with an f-string: `f\"${self.cents / 100:.2f}\"` — that's cents/100 with 2 decimals.",
+        "`__eq__` should first check the other object is a `Money`.",
+        "`__add__` returns a NEW `Money` — don't mutate `self`."
+      ],
+      "id": "oop-ex4",
+      "prompt": "Write a `Money` class representing an amount in cents: `__init__(self, cents)` stores an int. Implement `__str__` (e.g. `Money(250)` prints `\"$2.50\"`), `__eq__` (equal cents means equal), and `__add__` returning a new `Money` with the summed cents.\n\nExample:\n```python\nm1, m2 = Money(250), Money(100)\nprint(m1)        # $2.50\nm1 == Money(250) # -> True\nm3 = m1 + m2\nprint(m3)        # $3.50\n```",
+      "solution": "class Money:\n    def __init__(self, cents):\n        self.cents = cents\n\n    def __str__(self):\n        return f\"${self.cents / 100:.2f}\"\n\n    def __eq__(self, other):\n        return isinstance(other, Money) and self.cents == other.cents\n\n    def __add__(self, other):\n        return Money(self.cents + other.cents)\n",
+      "starterCode": "class Money:\n    pass\n",
+      "title": "Value equality with dunders"
+    },
+    {
+      "difficulty": "hard",
+      "hints": [
+        "`__post_init__` is the dataclass hook for validation after `__init__`.",
+        "A `@property` with only a getter makes `fahrenheit` read-only.",
+        "`celsius * 9 / 5 + 32` — mind the order of operations."
+      ],
+      "id": "oop-ex5",
+      "prompt": "Write a `@dataclass` called `Temperature` with a `celsius: float` field. Add a `fahrenheit` property that converts to Fahrenheit (`c * 9/5 + 32`), and validate in `__post_init__` that celsius is not below absolute zero (-273.15) — raise `ValueError` if it is.\n\nExample:\n```python\nt = Temperature(100)\nt.fahrenheit  # -> 212.0\nTemperature(-300)  # raises ValueError\n```\n\n`__post_init__` runs automatically after the generated `__init__`.",
+      "solution": "from dataclasses import dataclass\n\n\n@dataclass\nclass Temperature:\n    celsius: float\n\n    def __post_init__(self):\n        if self.celsius < -273.15:\n            raise ValueError(\"below absolute zero\")\n\n    @property\n    def fahrenheit(self):\n        return self.celsius * 9 / 5 + 32\n",
+      "starterCode": "from dataclasses import dataclass\n\n\n@dataclass\nclass Temperature:\n    pass\n",
+      "title": "Dataclass with validation"
+    }
+  ],
+  "id": "oop",
+  "lessons": [
+    {
+      "body": "# Classes and __init__\n\nA class bundles data (attributes) and behavior (methods). `__init__` is the constructor — it runs when you create an instance, and `self` refers to the instance being built.\n\n```python\nclass Dog:\n    def __init__(self, name, age):\n        self.name = name      # instance attributes, set per object\n        self.age = age\n\n    def bark(self):\n        return f\"{self.name} says woof!\"\n\nd = Dog(\"Rex\", 3)\nprint(d.bark())    # Rex says woof!\nprint(d.name)      # Rex\n```\n\n`self` is explicit — Python has no implicit `this`. The first parameter of every instance method is the instance itself, and you must declare it. Forgetting `self` is the #1 beginner error and the fix is always the same: add it.\n\n```python\nclass Counter:\n    def __init__(self):\n        self.count = 0        # every instance gets its own count\n\n    def increment(self):\n        self.count += 1\n\na, b = Counter(), Counter()\na.increment()\nprint(a.count, b.count)       # 1 0 — attributes live on the instance\n```\n\nAttributes don't need declaring up front — assigning `self.x` anywhere (usually `__init__`) creates it. This flexibility is powerful and also how you get `AttributeError` from typos, so keep `__init__` as the single place where attributes are born.",
+      "id": "oop-classes",
+      "jsNote": "Java: `__init__` is the constructor, `self` is `this` — except Python forces you to write `self` as a parameter instead of it being implicit. There are no access modifiers: everything is public, and privacy is by convention (single `_prefix`, double `__prefix` for name mangling — see the @property lesson). JavaScript: classes look similar on the surface (`constructor`, methods), but Python has no `new` keyword — `Dog(...)` calls the class directly.",
+      "keyPoints": [
+        "`class` defines the blueprint; `__init__(self, ...)` initializes each instance.",
+        "`self` is explicit — always the first parameter of instance methods.",
+        "Attributes are created by assignment (`self.x = ...`), typically all in `__init__`.",
+        "Each instance gets its own attributes; nothing is shared unless you use class attributes."
+      ],
+      "minutes": 12,
+      "title": "Classes and __init__"
+    },
+    {
+      "body": "# Instance, class, and static methods\n\nMost methods take `self` and operate on an instance. Two decorators give you the other flavors: `@classmethod` (takes the class) and `@staticmethod` (takes neither).\n\n```python\nclass Dog:\n    species = \"Canis familiaris\"   # class attribute: shared by ALL instances\n\n    def __init__(self, name):\n        self.name = name\n\n    def bark(self):                          # instance method: needs self\n        return f\"{self.name} says woof!\"\n\n    @classmethod\n    def from_dict(cls, data):                # class method: gets the class\n        return cls(data[\"name\"])             # alternative constructor\n\n    @staticmethod\n    def is_valid_name(name):                 # static: plain function in a namespace\n        return isinstance(name, str) and len(name) > 0\n\nd = Dog.from_dict({\"name\": \"Rex\"})   # call on the class, not an instance\nprint(Dog.species)                   # Canis familiaris\n```\n\nClass attributes (defined directly in the class body) are shared — one copy for the class and all instances. They're the right home for constants and defaults. But beware the mutable-class-attribute trap: a list defined as a class attribute is shared, so appending via one instance mutates it for all. When in doubt, initialize mutable state in `__init__`.\n\n```python\nclass Team:\n    def __init__(self, name):\n        self.name = name\n        self.members = []  # each team gets its OWN list — do this\n```\n\nClass methods shine as named alternative constructors (`from_dict`, `from_json`, `parse`) — a pattern you'll see constantly in real code. Static methods are rarer; they're just organizational — a function that logically belongs to the class but needs neither instance nor class state.",
+      "id": "oop-methods",
+      "jsNote": "Java: `@classmethod` is like a `static` factory method (`Dog.fromDict(...)`), except `cls` makes it inherit correctly in subclasses — Java statics don't do that. `@staticmethod` is a plain Java `static` method. Class attributes are `static` fields, including the exact same mutable-static-field trap Java developers already know to avoid. JavaScript: `static` methods in JS classes are closest to `@staticmethod`; Python has no direct equivalent of JS statics that need the class — that's `@classmethod`.",
+      "keyPoints": [
+        "Instance methods take `self`; classmethods take `cls`; staticmethods take neither.",
+        "`@classmethod` is the idiom for alternative constructors (`from_dict`, `from_csv`).",
+        "Class attributes are shared across instances — never put mutable state there.",
+        "`@staticmethod` = namespaced helper function; use sparingly."
+      ],
+      "minutes": 12,
+      "title": "Instance, class, and static methods"
+    },
+    {
+      "body": "# Inheritance and super()\n\nInheritance models an is-a relationship. The child class gets everything from the parent and overrides what it needs to change. `super()` calls the parent's version of a method — most often `__init__`.\n\n```python\nclass Animal:\n    def __init__(self, name):\n        self.name = name\n\n    def speak(self):\n        return \"...\"\n\nclass Dog(Animal):                       # Dog inherits from Animal\n    def __init__(self, name, breed):\n        super().__init__(name)           # run Animal's __init__ first\n        self.breed = breed\n\n    def speak(self):                     # override\n        return f\"{self.name} says woof!\"\n\nprint(Dog(\"Rex\", \"corgi\").speak())       # Rex says woof!\n```\n\nPython favors composition and duck typing over deep hierarchies — \"if it quacks like a duck, treat it like a duck.\" You rarely need formal interfaces: if an object has the methods you call, it works. When you do want to declare \"subclasses must implement this,\" use `abc.ABC` with `@abstractmethod` — instantiating a subclass that skipped one raises `TypeError`.\n\n```python\nfrom abc import ABC, abstractmethod\n\nclass Shape(ABC):\n    @abstractmethod\n    def area(self):\n        ...                              # subclasses MUST implement this\n\nclass Circle(Shape):\n    def __init__(self, r):\n        self.r = r\n    def area(self):\n        return 3.14159 * self.r ** 2\n\n# Shape()  -> TypeError: Can't instantiate abstract class\n```\n\nKeep hierarchies shallow — one or two levels. Deep inheritance trees become rigid and hard to reason about; reach for composition (an object holding other objects) when the design gets complicated.",
+      "id": "oop-inheritance",
+      "jsNote": "Java: `super().__init__(name)` is the `super(name)` constructor call — but in Python it's optional, and forgetting it just means parent state never initializes (no compiler error to save you). `ABC` + `@abstractmethod` are abstract classes/interfaces; the difference is Python checks at instantiation time, not compile time. There's no `implements` vs `extends` split and no method overloading by arity — same-name methods with different signatures just overwrite each other (use default arguments instead). JavaScript: `extends` / `super()` map directly; but JS has no abstract classes natively, and Python's duck typing is even more idiomatic than JS's.",
+      "keyPoints": [
+        "`class Child(Parent):` inherits; `super().__init__(...)` runs the parent's constructor.",
+        "Override methods by redefining them; call the parent version via `super()`.",
+        "Duck typing is the default — formal interfaces via `abc.ABC` + `@abstractmethod` when you need enforcement.",
+        "Prefer shallow hierarchies and composition over deep inheritance."
+      ],
+      "minutes": 12,
+      "title": "Inheritance and super()"
+    },
+    {
+      "body": "# Dunder methods: making objects Pythonic\n\nMethods wrapped in double underscores (\"dunders\") hook your class into Python's syntax. Define a few and your objects work with `print()`, `==`, `len()`, loops, and more.\n\n```python\nclass Point:\n    def __init__(self, x, y):\n        self.x, self.y = x, y\n\n    def __str__(self):                     # str(p), print(p), f\"{p}\"\n        return f\"Point({self.x}, {self.y})\"\n\n    def __repr__(self):                    # repr(p), debugger & logs\n        return f\"Point(x={self.x}, y={self.y})\"\n\n    def __eq__(self, other):                # p1 == p2\n        return (self.x, self.y) == (other.x, other.y)\n\np = Point(1, 2)\nprint(p)          # Point(1, 2)      <- __str__\nprint(repr(p))    # Point(x=1, y=2)  <- __repr__\n```\n\n`__str__` is for humans, `__repr__` is for developers — `__repr__` should ideally look like code that could recreate the object. If you define only one, make it `__repr__`: Python falls back to it when `__str__` is missing.\n\n```python\nclass Playlist:\n    def __init__(self):\n        self.songs = []\n\n    def add(self, song):\n        self.songs.append(song)\n\n    def __len__(self):                     # len(playlist)\n        return len(self.songs)\n\n    def __iter__(self):                    # for song in playlist\n        return iter(self.songs)\n\npl = Playlist()\npl.add(\"Blue\")\nprint(len(pl))          # 1\nfor s in pl:            # works because of __iter__\n    print(s)\n```\n\nImportant gotcha: defining `__eq__` sets `__hash__` to `None`, making your objects unhashable (unusable as dict keys or in sets) unless you also define `__hash__`. And default `==` without `__eq__` compares identity (`is`) — two objects with identical data are not equal unless you say so.",
+      "id": "oop-dunder",
+      "jsNote": "Java: `__str__` = `toString()`, `__eq__` = `equals()` (and the `__hash__` gotcha is exactly the equals/hashCode contract — Java devs already know this pain), `__len__` / `__iter__` are like implementing `Iterable` / `size()`. One big difference: Python has no `.equals()` vs `==` split — `==` calls `__eq__`, while `is` is the identity check (Java's `==` on objects). JavaScript: the `==` vs `===` confusion doesn't exist here; Python's `==` is value equality via `__eq__`, always.",
+      "keyPoints": [
+        "Dunders hook into syntax: `__str__`/`__repr__`, `__eq__`, `__len__`, `__iter__`.",
+        "`__repr__` is the developer-facing fallback — define it first.",
+        "Defining `__eq__` without `__hash__` makes instances unhashable.",
+        "Default `==` is identity comparison; `__eq__` gives you value comparison."
+      ],
+      "minutes": 14,
+      "title": "Dunder methods: making objects Pythonic"
+    },
+    {
+      "body": "# @property and dataclasses\n\nPython has no `private` keyword. The convention: one leading underscore (`_balance`) means \"internal, don't touch,\" enforced by culture, not the compiler. When you need controlled access, `@property` turns a method into an attribute with validation.\n\n```python\nclass Account:\n    def __init__(self, balance):\n        self.balance = balance   # goes through the setter below\n\n    @property\n    def balance(self):\n        return self._balance\n\n    @balance.setter\n    def balance(self, value):\n        if value < 0:\n            raise ValueError(\"balance can't be negative\")\n        self._balance = value\n\na = Account(100)\na.balance = 200      # looks like attribute assignment, runs the setter\nprint(a.balance)     # 200\n```\n\nStart with plain attributes; add `@property` later when you need validation or computed values — callers never change their code. That's the Python answer to getters/setters: don't write them preemptively.\n\n```python\nfrom dataclasses import dataclass\n\n@dataclass\nclass Point:\n    x: float\n    y: float\n\np = Point(1, 2)\nprint(p)                 # Point(x=1, y=2) — __repr__ generated\nprint(p == Point(1, 2))  # True — __eq__ generated\n```\n\n`@dataclass` auto-generates `__init__`, `__repr__`, and `__eq__` from the annotated fields — it's made for classes that mainly hold data (DTOs, configs, parsed records). Add `@property` or methods for behavior. If your class is mostly data with a little logic, reach for dataclass first.",
+      "id": "oop-property-dataclass",
+      "jsNote": "Java: `_balance` is package-private / `protected` by convention only — nothing stops access, so treat it as a team agreement. `@property` is a getter/setter pair that callers use as a field (`a.balance = 200` instead of `a.setBalance(200)`). `@dataclass` is Lombok's `@Data` or a Java `record` — auto-generated constructor, equals, and toString. JavaScript: `@property` is like JS getters/setters in classes (`get balance()`), which JS devs already use the same way.",
+      "keyPoints": [
+        "Privacy is conventional: `_name` means internal; no compiler enforcement.",
+        "`@property` adds validation/computed attributes without changing the caller interface.",
+        "Don't write getters/setters preemptively — plain attributes first, property when needed.",
+        "`@dataclass` generates `__init__`, `__repr__`, `__eq__` — ideal for data-holding classes."
+      ],
+      "minutes": 12,
+      "title": "@property and dataclasses"
+    }
+  ],
+  "tagline": "Classes, inheritance, dunder methods, properties, and dataclasses.",
+  "title": "Object-Oriented Python"
+}

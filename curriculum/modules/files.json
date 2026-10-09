@@ -1,0 +1,100 @@
+{
+  "estimatedMinutes": 60,
+  "exercises": [
+    {
+      "difficulty": "easy",
+      "hints": [
+        "`Path.read_text()` reads the whole file in one call.",
+        "`str.split()` with no arguments splits on any whitespace.",
+        "`str.splitlines()` handles the line counting."
+      ],
+      "id": "files-ex1",
+      "prompt": "Write a function `file_stats(path)` that reads the text file at `path` and returns a dict with the number of lines, words, and characters.\n\nExample:\n```python\n# words.txt contains:\n# hello world\n# python is fun\nfile_stats(\"words.txt\")\n# -> {\"lines\": 2, \"words\": 5, \"chars\": 26}\n```\n\nUse `pathlib` to read the file. Words are whitespace-separated tokens; `chars` counts every character including newlines.",
+      "solution": "from pathlib import Path\n\n\ndef file_stats(path):\n    text = Path(path).read_text(encoding=\"utf-8\")\n    return {\n        \"lines\": len(text.splitlines()),\n        \"words\": len(text.split()),\n        \"chars\": len(text),\n    }\n",
+      "starterCode": "from pathlib import Path\n\n\ndef file_stats(path):\n    pass\n",
+      "title": "Count lines, words, and characters"
+    },
+    {
+      "difficulty": "medium",
+      "hints": [
+        "`json.loads` turns the file text into a list of dicts.",
+        "A list comprehension with an `if` clause does the filtering.",
+        "`json.dumps(..., indent=2)` pretty-prints."
+      ],
+      "id": "files-ex2",
+      "prompt": "Write a function `filter_products(in_path, out_path, min_price)` that reads a JSON file containing a list of product dicts (each with `\"name\"` and `\"price\"` keys), keeps only products with price >= `min_price`, and writes them to `out_path` as pretty-printed JSON (indent 2). Return the number of products written.\n\nExample:\n```python\n# products.json: [{\"name\": \"mouse\", \"price\": 25}, {\"name\": \"keyboard\", \"price\": 80}]\nfilter_products(\"products.json\", \"filtered.json\", 50)\n# -> 1   (filtered.json now holds only the keyboard)\n```",
+      "solution": "import json\nfrom pathlib import Path\n\n\ndef filter_products(in_path, out_path, min_price):\n    products = json.loads(Path(in_path).read_text(encoding=\"utf-8\"))\n    kept = [p for p in products if p[\"price\"] >= min_price]\n    Path(out_path).write_text(json.dumps(kept, indent=2), encoding=\"utf-8\")\n    return len(kept)\n",
+      "starterCode": "import json\nfrom pathlib import Path\n\n\ndef filter_products(in_path, out_path, min_price):\n    pass\n",
+      "title": "Filter a JSON file"
+    },
+    {
+      "difficulty": "hard",
+      "hints": [
+        "`csv.DictReader` gives you each row as a dict keyed by the header.",
+        "`max(..., key=...)` finds the top student without sorting.",
+        "Convert score strings with `int()` before doing math."
+      ],
+      "id": "files-ex3",
+      "prompt": "Write a function `grade_summary(csv_path)` that reads a CSV file with columns `name,score` and returns a dict with the class average (rounded to 1 decimal), the highest score, and the name of the top student.\n\nExample:\n```python\n# grades.csv:\n# name,score\n# amy,88\n# bo,95\n# cy,72\ngrade_summary(\"grades.csv\")\n# -> {\"average\": 85.0, \"highest\": 95, \"top_student\": \"bo\"}\n```\n\nScores in the file are strings — convert them. Open the file with `newline=\"\"` and use `csv.DictReader`.",
+      "solution": "import csv\n\n\ndef grade_summary(csv_path):\n    with open(csv_path, newline=\"\", encoding=\"utf-8\") as f:\n        rows = list(csv.DictReader(f))\n    scores = [(row[\"name\"], int(row[\"score\"])) for row in rows]\n    top_name, top_score = max(scores, key=lambda pair: pair[1])\n    average = round(sum(s for _, s in scores) / len(scores), 1)\n    return {\"average\": average, \"highest\": top_score, \"top_student\": top_name}\n",
+      "starterCode": "import csv\n\n\ndef grade_summary(csv_path):\n    pass\n",
+      "title": "CSV gradebook summary"
+    }
+  ],
+  "id": "files",
+  "lessons": [
+    {
+      "body": "# Reading files with open()\n\nEvery file operation starts with `open()`. It takes a path and a mode string, and returns a file object you read from or write to.\n\n```python\nf = open(\"notes.txt\", \"r\")   # \"r\" = read mode (the default)\ntext = f.read()              # read the whole file as one string\nf.close()\n```\n\nModes you'll use constantly: `\"r\"` read (the default), `\"w\"` write (creates or **truncates**), `\"a\"` append, `\"r+\"` read+write, `\"x\"` exclusive creation. Add `\"b\"` for binary (`\"rb\"`, `\"wb\"`) when the file isn't text — images, archives, anything you wouldn't open in a text editor.\n\n```python\nf = open(\"notes.txt\", \"r\", encoding=\"utf-8\")\nlines = f.readlines()        # list of lines, each keeping its \"\\n\"\nf.close()\n\nf = open(\"notes.txt\", encoding=\"utf-8\")\nfor line in f:               # file objects are iterable, one line at a time\n    print(line.rstrip())     # rstrip() strips the trailing newline\nf.close()\n```\n\nA few things to internalize early. `read()` with no argument slurps the entire file into memory — fine for a config file, a bad idea for a 2 GB log. The iterator approach (`for line in f`) streams one line at a time and is the default habit you want. And `\"w\"` mode silently destroys existing content; if you're not sure the file should be clobbered, `\"a\"` appends safely and `\"x\"` refuses to overwrite.\n\n```python\ntry:\n    f = open(\"config.yaml\", \"x\")   # raises FileExistsError if present\n    f.write(\"created\\n\")\n    f.close()\nexcept FileExistsError:\n    print(\"config already exists, not overwriting\")\n```\n\nOne last detail: text files are decoded to `str` using a platform-default encoding. Being explicit — `open(path, encoding=\"utf-8\")` — removes an entire class of cross-platform bugs. Make it a reflex.",
+      "id": "files-open",
+      "jsNote": "Java: `open()` collapses `new BufferedReader(new FileReader(...))` into one call — and there's no checked `IOException` forcing try/catch, but `FileNotFoundError` is still raised at runtime, so handle it where it matters. JavaScript (Node): `fs.readFileSync` / `fs.promises.readFile` are the equivalents; unlike Node's async default, Python file I/O is blocking unless you reach for `aiofiles`.",
+      "keyPoints": [
+        "`open(path, mode)` returns a file object; modes: \"r\", \"w\" (truncates!), \"a\", \"x\", plus \"b\" for binary.",
+        "Iterate the file object directly to stream lines without loading the whole file.",
+        "Always `close()` what you open — or better, use `with` (next lesson).",
+        "Pass `encoding=\"utf-8\"` explicitly for text files."
+      ],
+      "minutes": 10,
+      "title": "Reading files with open()"
+    },
+    {
+      "body": "# Writing files and the with statement\n\nWriting mirrors reading. Open in `\"w\"` or `\"a\"`, call `write()`, close the file. The part people skip — closing — is where `with` comes in.\n\n```python\nf = open(\"log.txt\", \"w\", encoding=\"utf-8\")\nf.write(\"started\\n\")\nf.write(\"finished\\n\")\nf.close()\n```\n\n`write()` does not add newlines for you. You write exactly the characters you pass, which is why you see explicit `\"\\n\"` everywhere. For multi-line content, assemble a list and `join` it rather than concatenating in a loop.\n\n```python\nlines = [\"started\", \"processing\", \"finished\"]\nwith open(\"log.txt\", \"w\", encoding=\"utf-8\") as f:\n    f.write(\"\\n\".join(lines) + \"\\n\")\n```\n\nThe `with` statement is the single most important idiom in this module. It guarantees the file is closed when the block exits — even if an exception is raised inside. Forget `try/finally` around every file operation; `with` is the Pythonic replacement, and you should use it for every file you open.\n\n```python\nwith open(\"log.txt\", \"a\", encoding=\"utf-8\") as f:\n    print(\"event: user_login\", file=f)   # newline added automatically\n# file is closed here, no matter what happened above\n```\n\nTwo more tools worth knowing now. `print(..., file=f)` writes to a file instead of the console and adds the newline for you — handy for quick scripts. And `\"a\"` (append) positions the cursor at the end, so it never truncates; it's what log-style writes want.",
+      "id": "files-write",
+      "jsNote": "Java: `with` is try-with-resources (`try (BufferedWriter w = ...)`) built into the language for anything implementing the context-manager protocol — and unlike Java, it's one keyword, not a special try form. JavaScript: there is no equivalent; you'd `try/finally` around `fs` handles yourself.",
+      "keyPoints": [
+        "`write()` writes exactly what you pass — newlines are your job.",
+        "`with open(...) as f:` auto-closes the file, even on exceptions. Use it always.",
+        "`\"a\"` appends without truncating; `\"w\"` truncates.",
+        "`print(..., file=f)` is a convenient writer that adds newlines."
+      ],
+      "minutes": 10,
+      "title": "Writing files and the with statement"
+    },
+    {
+      "body": "# Paths with pathlib\n\nString-concatenating paths (`folder + \"/\" + name`) breaks on Windows and is hard to read. `pathlib` gives you `Path` objects where `/` joins paths and everything path-related is a method.\n\n```python\nfrom pathlib import Path\n\np = Path(\"data\") / \"reports\" / \"q3.txt\"\nprint(p)                 # data/reports/q3.txt (correct separators per OS)\nprint(p.name)            # q3.txt\nprint(p.stem)            # q3\nprint(p.suffix)          # .txt\nprint(p.parent)          # data/reports\nprint(p.exists())        # True / False\n```\n\nFor quick whole-file reads and writes, `Path` has one-liners that hide `open()` entirely:\n\n```python\ntext = Path(\"notes.txt\").read_text(encoding=\"utf-8\")\nPath(\"out.txt\").write_text(\"hello\\n\", encoding=\"utf-8\")\n```\n\nDirectory work is equally direct: `mkdir(parents=True, exist_ok=True)` creates nested directories, `iterdir()` lists entries, and `glob(\"*.py\")` finds files by pattern — recursive with `rglob`.\n\n```python\nbase = Path(\"data\")\nbase.mkdir(parents=True, exist_ok=True)\n\nfor py_file in Path(\".\").rglob(\"*.py\"):\n    print(py_file)\n```\n\nThe rule of thumb: `pathlib` for paths, `open()` (or the `read_text` shortcuts) for contents. You'll still see `os.path.join` in older code — it works, but `pathlib` is the modern standard and what new code should use.",
+      "id": "files-pathlib",
+      "jsNote": "Java: `Path.of(\"data\", \"reports\")` and the `java.nio.file.Files` helpers are the direct analogs — Python's `pathlib` is essentially that API with operator overloading for `/`. JavaScript (Node): `path.join()` is the equivalent of `/` joining; `fs.readdirSync` with globs needs a library, while `pathlib` has `glob` built in.",
+      "keyPoints": [
+        "Use `/` to join `Path` objects — portable across operating systems.",
+        "`.name`, `.stem`, `.suffix`, `.parent`, `.exists()` cover everyday path questions.",
+        "`read_text()` / `write_text()` for whole-file shortcuts; `glob()` / `rglob()` to find files.",
+        "Prefer `pathlib` over `os.path` in new code."
+      ],
+      "minutes": 10,
+      "title": "Paths with pathlib"
+    },
+    {
+      "body": "# JSON and CSV\n\nTwo formats cover most real-world file work: JSON for structured data, CSV for tabular data. Both have standard-library modules, so there's nothing to install.\n\nJSON maps directly onto Python types: objects become `dict`, arrays become `list`, strings/numbers/booleans/null become `str`/`int`/`float`/`bool`/`None`.\n\n```python\nimport json\nfrom pathlib import Path\n\nconfig = json.loads(Path(\"config.json\").read_text(encoding=\"utf-8\"))\nprint(config[\"database\"][\"host\"])\n\npayload = {\"name\": \"raymond\", \"scores\": [88, 92, 95]}\nPath(\"out.json\").write_text(json.dumps(payload, indent=2), encoding=\"utf-8\")\n```\n\n`json.dump` writes straight to a file object if you prefer; `indent=2` makes the output human-readable instead of one long line. Watch out for one gotcha: `json` can't serialize everything — `datetime` objects, sets, and custom classes raise `TypeError` unless you convert them first.\n\n```python\nimport csv\n\nwith open(\"users.csv\", newline=\"\", encoding=\"utf-8\") as f:\n    reader = csv.DictReader(f)          # rows as dicts, keyed by header\n    for row in reader:\n        print(row[\"name\"], row[\"email\"])\n\nwith open(\"out.csv\", \"w\", newline=\"\", encoding=\"utf-8\") as f:\n    writer = csv.DictWriter(f, fieldnames=[\"name\", \"email\"])\n    writer.writeheader()\n    writer.writerow({\"name\": \"Ada\", \"email\": \"ada@example.com\"})\n```\n\n`newline=\"\"` in `open()` is required by the `csv` module — without it you get blank rows on some platforms. `DictReader`/`DictWriter` (keyed by column name) are almost always nicer than the positional `reader`/`writer`.",
+      "id": "files-data",
+      "jsNote": "Java: the `json` module is what Jackson/Gson do, but with zero setup — no annotations or type tokens, since the result is just dicts and lists. JavaScript: `JSON.parse` / `JSON.stringify` are the direct equivalents; note Python's `json.dumps` has no replacer-function concept — transform the data before dumping.",
+      "keyPoints": [
+        "`json.load`/`loads` and `json.dump`/`dumps` convert between JSON text and dicts/lists.",
+        "`json` can't serialize datetimes, sets, or custom objects — convert first.",
+        "Use `csv.DictReader`/`DictWriter` for name-keyed rows; always open CSV files with `newline=\"\"`."
+      ],
+      "minutes": 12,
+      "title": "JSON and CSV"
+    }
+  ],
+  "tagline": "Read and write files, master the with statement, and wrangle paths with pathlib.",
+  "title": "File I/O"
+}
