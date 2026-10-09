@@ -1,0 +1,625 @@
+{
+  "version": 1,
+  "modules": [
+    {
+      "id": "setup",
+      "title": "Setup & First Steps",
+      "tagline": "Install Python 3, meet the REPL, run scripts, and learn print/input.",
+      "estimatedMinutes": 60,
+      "lessons": [
+        {
+          "id": "setup-install",
+          "title": "Installing Python 3",
+          "minutes": 10
+        },
+        {
+          "id": "setup-repl",
+          "title": "The REPL: Python's Instant Feedback Loop",
+          "minutes": 10
+        },
+        {
+          "id": "setup-scripts",
+          "title": "Running .py Scripts",
+          "minutes": 10
+        },
+        {
+          "id": "setup-io",
+          "title": "print(), input(), and Comments",
+          "minutes": 10
+        }
+      ],
+      "exercises": [
+        {
+          "id": "setup-ex1",
+          "title": "Hello, Your Name",
+          "difficulty": "easy"
+        },
+        {
+          "id": "setup-ex2",
+          "title": "Echo Bot",
+          "difficulty": "easy"
+        },
+        {
+          "id": "setup-ex3",
+          "title": "One-Line Receipt",
+          "difficulty": "medium"
+        }
+      ]
+    },
+    {
+      "id": "variables",
+      "title": "Variables & Data Types",
+      "tagline": "Dynamic typing, numbers, strings, f-strings, booleans, None, and conversions.",
+      "estimatedMinutes": 80,
+      "lessons": [
+        {
+          "id": "variables-dynamic",
+          "title": "Dynamic Typing: Variables Are Names, Not Boxes",
+          "minutes": 10
+        },
+        {
+          "id": "variables-numbers",
+          "title": "Numbers: int, float, and No Overflow",
+          "minutes": 12
+        },
+        {
+          "id": "variables-strings",
+          "title": "Strings and f-strings",
+          "minutes": 12
+        },
+        {
+          "id": "variables-bool-none",
+          "title": "Booleans and None",
+          "minutes": 10
+        },
+        {
+          "id": "variables-conversion",
+          "title": "Type Conversion and Naming",
+          "minutes": 10
+        }
+      ],
+      "exercises": [
+        {
+          "id": "variables-ex1",
+          "title": "Introduce Yourself",
+          "difficulty": "easy"
+        },
+        {
+          "id": "variables-ex2",
+          "title": "Celsius to Fahrenheit",
+          "difficulty": "easy"
+        },
+        {
+          "id": "variables-ex3",
+          "title": "Circle Math",
+          "difficulty": "medium"
+        },
+        {
+          "id": "variables-ex4",
+          "title": "None-Safe Greeting",
+          "difficulty": "medium"
+        }
+      ]
+    },
+    {
+      "id": "control-flow",
+      "title": "Control Flow",
+      "tagline": "if/elif/else, truthiness, for/while loops, break/continue, loop-else, match.",
+      "estimatedMinutes": 80,
+      "lessons": [
+        {
+          "id": "control-flow-if",
+          "title": "if / elif / else: Indentation Is Syntax",
+          "minutes": 12
+        },
+        {
+          "id": "control-flow-truthiness",
+          "title": "Truthiness: The Falsy Shortlist",
+          "minutes": 10
+        },
+        {
+          "id": "control-flow-for",
+          "title": "for Loops Iterate — They Don't Count",
+          "minutes": 12
+        },
+        {
+          "id": "control-flow-while",
+          "title": "while, break, continue, and the Loop-else",
+          "minutes": 12
+        },
+        {
+          "id": "control-flow-match",
+          "title": "match: Structural Pattern Matching",
+          "minutes": 10
+        }
+      ],
+      "exercises": [
+        {
+          "id": "control-flow-ex1",
+          "title": "Grade Classifier",
+          "difficulty": "easy"
+        },
+        {
+          "id": "control-flow-ex2",
+          "title": "Vowel Counter",
+          "difficulty": "easy"
+        },
+        {
+          "id": "control-flow-ex3",
+          "title": "Collatz Steps",
+          "difficulty": "medium"
+        },
+        {
+          "id": "control-flow-ex4",
+          "title": "First Repeat",
+          "difficulty": "medium"
+        }
+      ]
+    },
+    {
+      "id": "data-structures",
+      "title": "Lists, Tuples, Dicts & Sets",
+      "tagline": "The big four collections in depth: indexing, slicing, unpacking, comprehensions.",
+      "estimatedMinutes": 90,
+      "lessons": [
+        {
+          "id": "data-structures-lists",
+          "title": "Lists: Your ArrayList",
+          "minutes": 15
+        },
+        {
+          "id": "data-structures-tuples",
+          "title": "Tuples: Immutable Sequences",
+          "minutes": 10
+        },
+        {
+          "id": "data-structures-dicts",
+          "title": "Dicts: Your HashMap",
+          "minutes": 15
+        },
+        {
+          "id": "data-structures-sets",
+          "title": "Sets: Unique Collections and Fast Membership",
+          "minutes": 10
+        },
+        {
+          "id": "data-structures-comprehensions",
+          "title": "Comprehensions and Picking the Right Structure",
+          "minutes": 15
+        }
+      ],
+      "exercises": [
+        {
+          "id": "data-structures-ex1",
+          "title": "First and Last",
+          "difficulty": "easy"
+        },
+        {
+          "id": "data-structures-ex2",
+          "title": "Word Lengths",
+          "difficulty": "easy"
+        },
+        {
+          "id": "data-structures-ex3",
+          "title": "Even Squares",
+          "difficulty": "medium"
+        },
+        {
+          "id": "data-structures-ex4",
+          "title": "Common Ground",
+          "difficulty": "medium"
+        },
+        {
+          "id": "data-structures-ex5",
+          "title": "Vote Tally",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "id": "functions",
+      "title": "Functions",
+      "tagline": "def, defaults and the mutable-default trap, *args/**kwargs, scope, lambdas.",
+      "estimatedMinutes": 90,
+      "lessons": [
+        {
+          "id": "functions-def",
+          "title": "def, Parameters, and Return",
+          "minutes": 12
+        },
+        {
+          "id": "functions-defaults",
+          "title": "Default Arguments and the Mutable-Default Trap",
+          "minutes": 12
+        },
+        {
+          "id": "functions-args",
+          "title": "*args and **kwargs",
+          "minutes": 12
+        },
+        {
+          "id": "functions-scope",
+          "title": "Scope: LEGB and Why There's No Block Scope",
+          "minutes": 12
+        },
+        {
+          "id": "functions-lambda-docs",
+          "title": "Lambdas, Docstrings, and Functions as Values",
+          "minutes": 12
+        }
+      ],
+      "exercises": [
+        {
+          "id": "functions-ex1",
+          "title": "Friendly Defaults",
+          "difficulty": "easy"
+        },
+        {
+          "id": "functions-ex2",
+          "title": "Fix the Shared List",
+          "difficulty": "medium"
+        },
+        {
+          "id": "functions-ex3",
+          "title": "Average Anything",
+          "difficulty": "medium"
+        },
+        {
+          "id": "functions-ex4",
+          "title": "Profile Builder",
+          "difficulty": "medium"
+        },
+        {
+          "id": "functions-ex5",
+          "title": "Counter Factory",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "id": "errors",
+      "title": "Error Handling",
+      "tagline": "try/except/else/finally, specific catches, raising, custom exceptions, tracebacks.",
+      "estimatedMinutes": 60,
+      "lessons": [
+        {
+          "id": "errors-try",
+          "title": "try / except / else / finally",
+          "minutes": 12
+        },
+        {
+          "id": "errors-specific",
+          "title": "Catch Specific Exceptions",
+          "minutes": 12
+        },
+        {
+          "id": "errors-raise",
+          "title": "Raising and Custom Exceptions",
+          "minutes": 10
+        },
+        {
+          "id": "errors-traceback",
+          "title": "Reading Tracebacks",
+          "minutes": 10
+        }
+      ],
+      "exercises": [
+        {
+          "id": "errors-ex1",
+          "title": "Safe Int",
+          "difficulty": "easy"
+        },
+        {
+          "id": "errors-ex2",
+          "title": "Guarded Withdrawal",
+          "difficulty": "medium"
+        },
+        {
+          "id": "errors-ex3",
+          "title": "Custom Exception",
+          "difficulty": "medium"
+        }
+      ]
+    },
+    {
+      "id": "files",
+      "title": "File I/O",
+      "tagline": "Read and write files, master the with statement, and wrangle paths with pathlib.",
+      "estimatedMinutes": 60,
+      "lessons": [
+        {
+          "id": "files-open",
+          "title": "Reading files with open()",
+          "minutes": 10
+        },
+        {
+          "id": "files-write",
+          "title": "Writing files and the with statement",
+          "minutes": 10
+        },
+        {
+          "id": "files-pathlib",
+          "title": "Paths with pathlib",
+          "minutes": 10
+        },
+        {
+          "id": "files-data",
+          "title": "JSON and CSV",
+          "minutes": 12
+        }
+      ],
+      "exercises": [
+        {
+          "id": "files-ex1",
+          "title": "Count lines, words, and characters",
+          "difficulty": "easy"
+        },
+        {
+          "id": "files-ex2",
+          "title": "Filter a JSON file",
+          "difficulty": "medium"
+        },
+        {
+          "id": "files-ex3",
+          "title": "CSV gradebook summary",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "id": "modules",
+      "title": "Modules, Packages & Environments",
+      "tagline": "Imports, the standard library, pip, virtual environments, and sane project layout.",
+      "estimatedMinutes": 60,
+      "lessons": [
+        {
+          "id": "modules-imports",
+          "title": "Imports and the module system",
+          "minutes": 10
+        },
+        {
+          "id": "modules-stdlib",
+          "title": "The standard library tour",
+          "minutes": 10
+        },
+        {
+          "id": "modules-pip-venv",
+          "title": "pip and virtual environments",
+          "minutes": 12
+        },
+        {
+          "id": "modules-structure",
+          "title": "Scripts, __main__, and project layout",
+          "minutes": 10
+        }
+      ],
+      "exercises": [
+        {
+          "id": "modules-ex1",
+          "title": "Top words with Counter",
+          "difficulty": "easy"
+        },
+        {
+          "id": "modules-ex2",
+          "title": "A silent-on-import module",
+          "difficulty": "medium"
+        },
+        {
+          "id": "modules-ex3",
+          "title": "Where does an import come from?",
+          "difficulty": "medium"
+        }
+      ]
+    },
+    {
+      "id": "oop",
+      "title": "Object-Oriented Python",
+      "tagline": "Classes, inheritance, dunder methods, properties, and dataclasses.",
+      "estimatedMinutes": 90,
+      "lessons": [
+        {
+          "id": "oop-classes",
+          "title": "Classes and __init__",
+          "minutes": 12
+        },
+        {
+          "id": "oop-methods",
+          "title": "Instance, class, and static methods",
+          "minutes": 12
+        },
+        {
+          "id": "oop-inheritance",
+          "title": "Inheritance and super()",
+          "minutes": 12
+        },
+        {
+          "id": "oop-dunder",
+          "title": "Dunder methods: making objects Pythonic",
+          "minutes": 14
+        },
+        {
+          "id": "oop-property-dataclass",
+          "title": "@property and dataclasses",
+          "minutes": 12
+        }
+      ],
+      "exercises": [
+        {
+          "id": "oop-ex1",
+          "title": "A BankAccount class",
+          "difficulty": "easy"
+        },
+        {
+          "id": "oop-ex2",
+          "title": "Alternative constructor with @classmethod",
+          "difficulty": "medium"
+        },
+        {
+          "id": "oop-ex3",
+          "title": "Shapes with inheritance",
+          "difficulty": "medium"
+        },
+        {
+          "id": "oop-ex4",
+          "title": "Value equality with dunders",
+          "difficulty": "medium"
+        },
+        {
+          "id": "oop-ex5",
+          "title": "Dataclass with validation",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "id": "intermediate",
+      "title": "Intermediate Python",
+      "tagline": "Comprehensions, generators, decorators, context managers, and iterator power tools.",
+      "estimatedMinutes": 90,
+      "lessons": [
+        {
+          "id": "intermediate-comprehensions",
+          "title": "Comprehensions, deep dive",
+          "minutes": 12
+        },
+        {
+          "id": "intermediate-generators",
+          "title": "Generators and yield",
+          "minutes": 14
+        },
+        {
+          "id": "intermediate-decorators",
+          "title": "Decorators",
+          "minutes": 14
+        },
+        {
+          "id": "intermediate-context",
+          "title": "Context managers",
+          "minutes": 12
+        },
+        {
+          "id": "intermediate-itertools",
+          "title": "itertools and functools essentials",
+          "minutes": 12
+        }
+      ],
+      "exercises": [
+        {
+          "id": "intermediate-ex1",
+          "title": "Comprehension drills",
+          "difficulty": "easy"
+        },
+        {
+          "id": "intermediate-ex2",
+          "title": "Fibonacci generator",
+          "difficulty": "medium"
+        },
+        {
+          "id": "intermediate-ex3",
+          "title": "Retry decorator",
+          "difficulty": "medium"
+        },
+        {
+          "id": "intermediate-ex4",
+          "title": "Temporary directory changer",
+          "difficulty": "hard"
+        },
+        {
+          "id": "intermediate-ex5",
+          "title": "Word frequency pipeline",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "id": "testing",
+      "title": "Testing & Debugging",
+      "tagline": "assert, pytest, and systematic debugging.",
+      "estimatedMinutes": 45,
+      "lessons": [
+        {
+          "id": "testing-assert",
+          "title": "assert and reading tracebacks",
+          "minutes": 10
+        },
+        {
+          "id": "testing-pytest",
+          "title": "pytest basics",
+          "minutes": 12
+        },
+        {
+          "id": "testing-debug",
+          "title": "Debugging strategies",
+          "minutes": 10
+        }
+      ],
+      "exercises": [
+        {
+          "id": "testing-ex1",
+          "title": "Read the traceback",
+          "difficulty": "easy"
+        },
+        {
+          "id": "testing-ex2",
+          "title": "Write parametrized tests",
+          "difficulty": "medium"
+        },
+        {
+          "id": "testing-ex3",
+          "title": "Test-drive a fix",
+          "difficulty": "medium"
+        }
+      ]
+    },
+    {
+      "id": "capstone",
+      "title": "Capstone: Build a Tiny API",
+      "tagline": "Build a real REST API with FastAPI, then ship your capstone project.",
+      "estimatedMinutes": 90,
+      "lessons": [
+        {
+          "id": "capstone-fastapi",
+          "title": "FastAPI quickstart",
+          "minutes": 12
+        },
+        {
+          "id": "capstone-routes",
+          "title": "Routes, path and query parameters",
+          "minutes": 12
+        },
+        {
+          "id": "capstone-json",
+          "title": "Responses, status codes, and errors",
+          "minutes": 10
+        },
+        {
+          "id": "capstone-project",
+          "title": "Your capstone project and where to go next",
+          "minutes": 10
+        }
+      ],
+      "exercises": [
+        {
+          "id": "capstone-ex1",
+          "title": "Your first route",
+          "difficulty": "easy"
+        },
+        {
+          "id": "capstone-ex2",
+          "title": "Query params and validation",
+          "difficulty": "medium"
+        },
+        {
+          "id": "capstone-ex3",
+          "title": "POST with a Pydantic model",
+          "difficulty": "medium"
+        },
+        {
+          "id": "capstone-ex4",
+          "title": "Capstone project: task tracker API",
+          "difficulty": "hard"
+        }
+      ]
+    }
+  ]
+}
