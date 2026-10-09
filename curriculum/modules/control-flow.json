@@ -1,0 +1,123 @@
+{
+  "id": "control-flow",
+  "title": "Control Flow",
+  "tagline": "if/elif/else, truthiness, for/while loops, break/continue, loop-else, match.",
+  "estimatedMinutes": 80,
+  "lessons": [
+    {
+      "id": "control-flow-if",
+      "title": "if / elif / else: Indentation Is Syntax",
+      "minutes": 12,
+      "body": "# if / elif / else: Indentation Is Syntax\n\nPython has no braces. Indentation defines blocks — and it's enforced, not stylistic:\n\n```python\nscore = 85\n\nif score >= 90:\n    print(\"A\")\nelif score >= 80:\n    print(\"B\")\nelse:\n    print(\"C\")\n```\n\nThe colon ends the header line; everything indented under it belongs to the block. Dedent to leave the block. Use 4 spaces per level (never tabs — mixing tabs and spaces is a syntax error).\n\n## elif, not else-if\n\nPython chains with `elif` (one word). Long `elif` chains are normal, and the `match` statement (later this module) handles the fancy cases.\n\n```python\nif x < 0:\n    sign = \"negative\"\nelif x == 0:\n    sign = \"zero\"\nelse:\n    sign = \"positive\"\n```\n\n## Comparison chaining\n\nComparisons chain naturally, the way you'd write them in math:\n\n```python\nage = 25\nif 18 <= age < 65:\n    print(\"working age\")\n```\n\n`18 <= age < 65` means `18 <= age and age < 65` — no other mainstream language lets you write this, and it's genuinely pleasant.",
+      "jsNote": "Java comparison: the mental translation is mechanical — braces become indentation, `else if` becomes `elif`, `&&` becomes `and`. The dangerous part isn't syntax, it's that mis-indentation is a *logic* bug, not a compile error: Python won't complain if you indent a line under the wrong `if`, it'll just run the wrong branch. Java's braces make that class of bug impossible. JavaScript comparison: same translation from `else if`, and note there's no `===` — Python's `==` doesn't coerce, so it's already the strict one.",
+      "keyPoints": [
+        "Indentation defines blocks — 4 spaces, never tabs",
+        "`elif` chains conditions; the colon ends each header line",
+        "Comparisons chain: `18 <= age < 65` works as written",
+        "Mis-indentation causes silent logic bugs, not errors — watch your levels"
+      ]
+    },
+    {
+      "id": "control-flow-truthiness",
+      "title": "Truthiness: The Falsy Shortlist",
+      "minutes": 10,
+      "body": "# Truthiness: The Falsy Shortlist\n\nEvery Python object is truthy or falsy. The falsy list is short — memorize it:\n\n- `False`\n- `None`\n- `0`, `0.0` (any numeric zero)\n- `\"\"` (empty string)\n- `[]`, `{}`, `set()` (empty collections)\n\n**Everything else is truthy.** That's the whole rule.\n\n```python\nif []:\n    print(\"won't print\")\n\nif \"hello\":\n    print(\"will print\")  # non-empty string is truthy\n```\n\n## Write `if x:`, not `if x == True:`\n\nTesting truthiness directly is idiomatic:\n\n```python\nitems = []\n\n# Pythonic\nif items:\n    print(\"has items\")\n\n# clumsy -- never write this\nif len(items) > 0:\n    print(\"has items\")\n```\n\nBut be careful with the `or`-default idiom when falsy values are legitimate:\n\n```python\n# bug: timeout=0 is a valid value, but falsy!\ndef connect(timeout):\n    timeout = timeout or 30  # 0 becomes 30 -- wrong!\n```\n\nWhen `0`, `\"\"`, or `[]` are meaningful inputs, test explicitly instead:\n\n```python\ndef connect(timeout):\n    if timeout is None:\n        timeout = 30\n```",
+      "jsNote": "Java comparison: Java *requires* a boolean in an `if` — `if (items)` doesn't compile for a List. Python's truthiness will feel alien at first; the Java equivalent of `if items:` is `if (!items.isEmpty())`, and Python just lets you skip the method call. JavaScript comparison: the falsy lists are close cousins — JS adds `NaN` and `undefined`, and has the `\"0\"` truthy quirk. Python's list is cleaner, but the `timeout or 30` footgun is identical to JS's `timeout || 30` — both swallow legitimate `0`s.",
+      "keyPoints": [
+        "Falsy = `False`, `None`, `0`, `\"\"`, empty collections — everything else is truthy",
+        "Prefer `if items:` over `if len(items) > 0:`",
+        "`x or default` breaks when `0`/`\"\"` are valid — use `is None` checks then",
+        "Empty collections are falsy, which makes emptiness checks read naturally"
+      ]
+    },
+    {
+      "id": "control-flow-for",
+      "title": "for Loops Iterate — They Don't Count",
+      "minutes": 12,
+      "body": "# for Loops Iterate — They Don't Count\n\nPython's `for` is a **for-each**: it walks over a sequence directly. There is no C-style `for (i = 0; i < n; i++)`:\n\n```python\nfruits = [\"apple\", \"banana\", \"cherry\"]\nfor fruit in fruits:\n    print(fruit)\n```\n\nNeed indices? `enumerate()` gives you both:\n\n```python\nfor i, fruit in enumerate(fruits):\n    print(f\"{i}: {fruit}\")\n# 0: apple\n# 1: banana\n# 2: cherry\n```\n\n## range(): counting without a list\n\nWhen you really do need to count, `range()` generates the numbers lazily (it doesn't build a list):\n\n```python\nfor i in range(5):\n    print(i)  # 0, 1, 2, 3, 4\n\nfor i in range(2, 10, 3):\n    print(i)  # 2, 5, 8\n```\n\n`range(n)` goes `0` to `n-1`. `range(start, stop, step)` generalizes it. A common beginner bug is expecting `range(5)` to include 5 — it never includes the stop value.\n\n## Iterate directly, not by index\n\n```python\n# Pythonic: iterate the items\nfor fruit in fruits:\n    print(fruit.upper())\n```\n\n```python\n# un-Pythonic: index juggling (works, but don't)\nfor i in range(len(fruits)):\n    print(fruits[i].upper())\n```\n\nIf you catch yourself writing `range(len(...))`, you almost always want plain iteration or `enumerate()`.",
+      "jsNote": "Java comparison: Python's `for` is Java's enhanced for-loop (`for (String f : fruits)`) — it's the *only* for-loop; there is no classic three-part `for`. `range(n)` replaces `for (int i = 0; i < n; i++)`, and `enumerate()` replaces manual index tracking. JavaScript comparison: `for...of` is the direct equivalent (`for (const f of fruits)`); `range(5)` is roughly `for (let i = 0; i < 5; i++)` without the boilerplate. One notable absence: Python has no `forEach`-with-callback as the primary idiom — the plain `for` statement is it.",
+      "keyPoints": [
+        "`for x in items:` iterates values directly — no index boilerplate",
+        "`range(n)` yields 0 to n-1 (stop value excluded); `range(start, stop, step)` generalizes",
+        "`enumerate()` gives index + value together",
+        "Avoid `range(len(...))` — iterate directly or use `enumerate()`"
+      ]
+    },
+    {
+      "id": "control-flow-while",
+      "title": "while, break, continue, and the Loop-else",
+      "minutes": 12,
+      "body": "# while, break, continue, and the Loop-else\n\n`while` is familiar territory:\n\n```python\nn = 5\nwhile n > 0:\n    print(n)\n    n -= 1\n# 5 4 3 2 1\n```\n\n`break` exits the loop immediately; `continue` skips to the next iteration:\n\n```python\nfor i in range(10):\n    if i % 2 == 0:\n        continue      # skip evens\n    if i > 7:\n        break         # stop entirely\n    print(i)          # 1 3 5 7\n```\n\n## The weird one: `else` on loops\n\nA loop can have an `else` clause that runs **only if the loop finished without `break`**:\n\n```python\nfor n in [3, 5, 7]:\n    if n % 2 == 0:\n        print(\"found an even\")\n        break\nelse:\n    print(\"no evens found\")  # runs -- the loop never broke\n```\n\nRead it as \"else\" = \"no break happened.\" It's the cleanest way to write search loops: no flag variable needed. It also works on `while`.\n\n## The `while True` pattern\n\nAn infinite loop with an explicit exit is idiomatic for input loops:\n\n```python\nwhile True:\n    answer = input(\"Type 'quit': \")\n    if answer == \"quit\":\n        break\n    print(f\"You typed: {answer}\")\n```\n\nJust make sure every path out is reachable — an infinite loop with no `break` is a bug, not a pattern.",
+      "jsNote": "Java comparison: `while`/`break`/`continue` map one-to-one — but Java has labeled `break`/`continue` for nested loops and Python doesn't; the Pythonic replacement is extracting the nested loop into a function and using `return`. The loop-`else` has no Java equivalent at all — it replaces the `boolean found = false;` flag pattern. JavaScript comparison: same keywords, same gap — no labeled breaks either, so the extract-to-function advice applies in both.",
+      "keyPoints": [
+        "`break` exits the loop; `continue` skips to the next iteration",
+        "Loop-`else` runs only when the loop completes without `break` — ideal for searches",
+        "`while True` + `break` is the standard input-loop pattern",
+        "No labeled break/continue — extract nested loops into functions and `return`"
+      ]
+    },
+    {
+      "id": "control-flow-match",
+      "title": "match: Structural Pattern Matching",
+      "minutes": 10,
+      "body": "# match: Structural Pattern Matching\n\nPython 3.10 added `match`, which looks like a switch but destructures data:\n\n```python\nstatus = 404\n\nmatch status:\n    case 200:\n        print(\"OK\")\n    case 404:\n        print(\"Not found\")\n    case 500:\n        print(\"Server error\")\n    case _:\n        print(\"Something else\")\n```\n\n`case _` is the wildcard (the `default`). Cases don't fall through — no `break` needed, ever.\n\n## Where match shines: shapes of data\n\nUnlike a switch, `match` can unpack sequences and dicts and bind variables:\n\n```python\ncommand = [\"move\", 10, 20]\n\nmatch command:\n    case [\"move\", x, y]:\n        print(f\"moving to {x}, {y}\")\n    case [\"quit\"]:\n        print(\"quitting\")\n    case _:\n        print(\"unknown command\")\n```\n\nThe pattern `[\"move\", x, y]` matches any 3-element list starting with `\"move\"` and binds `x` and `y`. Guards add conditions:\n\n```python\nmatch command:\n    case [\"move\", x, y] if x > 0:\n        print(f\"moving right to {x}, {y}\")\n    case _:\n        print(\"unknown command\")\n```\n\n## When to reach for it\n\nUse `match` for dispatching on the *shape* of data — commands, AST nodes, API responses with a type tag. For simple value comparisons, `if/elif` is equally readable. Don't contort code to use `match` where an `if` chain is clearer.",
+      "jsNote": "Java comparison: Java's `switch` (even the modern pattern-matching switch) is the ancestor here, but Python's `match` goes further with sequence and dict destructuring in patterns. Note the wildcard is `_`, not `default`, and there's no fall-through — ever. JavaScript comparison: it's `switch` without `break` and without fall-through bugs, plus destructuring superpowers. If you've written reducers that switch on `action.type`, `match` on a dict with a `\"type\"` key will feel like home.",
+      "keyPoints": [
+        "`match`/`case` dispatches on values; `case _` is the wildcard",
+        "No fall-through — cases never need `break`",
+        "Patterns can destructure lists/dicts and bind variables; guards add conditions",
+        "Best for shape-of-data dispatch; plain `if/elif` is fine for simple comparisons"
+      ]
+    }
+  ],
+  "exercises": [
+    {
+      "id": "control-flow-ex1",
+      "title": "Grade Classifier",
+      "difficulty": "easy",
+      "prompt": "Write a function `letter_grade(score)` returning `\"A\"`, `\"B\"`, `\"C\"`, `\"D\"`, or `\"F\"` for scores >= 90, >= 80, >= 70, >= 60, and below 60.\n\nExample calls:\n\n```python\nletter_grade(85)\n# returns: \"B\"\nletter_grade(59)\n# returns: \"F\"\n```",
+      "starterCode": "def letter_grade(score):\n    # TODO: return the letter grade for score\n    pass",
+      "solution": "def letter_grade(score):\n    if score >= 90:\n        return \"A\"\n    elif score >= 80:\n        return \"B\"\n    elif score >= 70:\n        return \"C\"\n    elif score >= 60:\n        return \"D\"\n    else:\n        return \"F\"",
+      "hints": [
+        "Check from the top down: 90 first, then 80, and so on",
+        "Early `return`s mean you don't need to nest anything"
+      ]
+    },
+    {
+      "id": "control-flow-ex2",
+      "title": "Vowel Counter",
+      "difficulty": "easy",
+      "prompt": "Write a function `count_vowels(text)` that returns the number of vowels (a, e, i, o, u — both cases) in the string.\n\nExample calls:\n\n```python\ncount_vowels(\"Hello World\")\n# returns: 3\n```",
+      "starterCode": "def count_vowels(text):\n    # TODO: count the vowels in text\n    pass",
+      "solution": "def count_vowels(text):\n    count = 0\n    for char in text.lower():\n        if char in \"aeiou\":\n            count += 1\n    return count",
+      "hints": [
+        "Lowercase the text first so you only need to check 5 vowels",
+        "The `in` operator tests membership in a string"
+      ]
+    },
+    {
+      "id": "control-flow-ex3",
+      "title": "Collatz Steps",
+      "difficulty": "medium",
+      "prompt": "Write a function `collatz_steps(n)` that returns how many steps it takes to reach 1 following the Collatz rules: if `n` is even, halve it; if odd, compute `3*n + 1`. Repeat until `n` is 1.\n\nExample calls:\n\n```python\ncollatz_steps(6)\n# returns: 8  (6 -> 3 -> 10 -> 5 -> 16 -> 8 -> 4 -> 2 -> 1)\n```",
+      "starterCode": "def collatz_steps(n):\n    # TODO: count steps until n reaches 1\n    pass",
+      "solution": "def collatz_steps(n):\n    steps = 0\n    while n != 1:\n        if n % 2 == 0:\n            n = n // 2\n        else:\n            n = 3 * n + 1\n        steps += 1\n    return steps",
+      "hints": [
+        "Use a `while n != 1` loop",
+        "Use `//` for halving to keep `n` an integer"
+      ]
+    },
+    {
+      "id": "control-flow-ex4",
+      "title": "First Repeat",
+      "difficulty": "medium",
+      "prompt": "Write a function `first_repeat(text)` that returns the first character appearing more than once, or `None` if every character is unique. Use a loop with `break`/`else` — no flag variable.\n\nExample calls:\n\n```python\nfirst_repeat(\"swiss\")\n# returns: \"s\"\nfirst_repeat(\"abc\")\n# returns: None\n```",
+      "starterCode": "def first_repeat(text):\n    seen = \"\"\n    # TODO: loop, break on repeat, else return None\n    pass",
+      "solution": "def first_repeat(text):\n    seen = \"\"\n    for char in text:\n        if char in seen:\n            break\n        seen += char\n    else:\n        return None\n    return char",
+      "hints": [
+        "Track characters you've already seen in a string",
+        "The loop-`else` runs only when no `break` happened — return `None` there"
+      ]
+    }
+  ]
+}

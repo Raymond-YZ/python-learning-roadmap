@@ -1,0 +1,123 @@
+{
+  "id": "variables",
+  "title": "Variables & Data Types",
+  "tagline": "Dynamic typing, numbers, strings, f-strings, booleans, None, and conversions.",
+  "estimatedMinutes": 80,
+  "lessons": [
+    {
+      "id": "variables-dynamic",
+      "title": "Dynamic Typing: Variables Are Names, Not Boxes",
+      "minutes": 10,
+      "body": "# Dynamic Typing: Variables Are Names, Not Boxes\n\nIn Java, a variable is a typed box: `int x = 5;` declares that `x` will always hold an int. In Python, a variable is just a **name stuck onto an object**. No declaration, no type annotation required:\n\n```python\nx = 5          # x names an int object\nx = \"hello\"  # now the same name points at a str object\n```\n\nThis is perfectly legal. The **object** has a type; the name doesn't. Check with `type()`:\n\n```python\nx = 5\nprint(type(x))   # <class 'int'>\nx = \"hello\"\nprint(type(x))   # <class 'str'>\n```\n\n## Assignment binds, it doesn't copy\n\n`a = b` makes `a` point at the same object `b` points at. For immutable values (numbers, strings) this distinction is invisible — but for mutable objects like lists it matters enormously, and we'll exploit it (and get bitten by it) in the data-structures module.\n\n```python\na = [1, 2, 3]\nb = a          # b names the SAME list, not a copy\nb.append(4)\nprint(a)       # [1, 2, 3, 4] -- a changed too!\n```\n\nFor now, just internalize the mental model: **names point at objects**.",
+      "jsNote": "Java comparison: forget `int x = 5;` — there are no declarations and no fixed types on variables. The closest Java mental shift is that every Python variable behaves like an `Object` reference that can be reassigned to anything. JavaScript comparison: it's like `let` with no type attached, except even looser — reassigning a number variable to a string is idiomatic, not a code smell. The `a = b` aliasing behavior matches Java object references and JS object assignment exactly: no implicit copies anywhere.",
+      "keyPoints": [
+        "Variables are names bound to objects — objects have types, names don't",
+        "No declarations; `x = 5` just works, and `x` can later name a string",
+        "`type(x)` reveals the current object's type",
+        "`a = b` aliases the same object — no copy is made"
+      ]
+    },
+    {
+      "id": "variables-numbers",
+      "title": "Numbers: int, float, and No Overflow",
+      "minutes": 12,
+      "body": "# Numbers: int, float, and No Overflow\n\nPython has two everyday numeric types: `int` (whole numbers) and `float` (decimals).\n\n```python\ncount = 42          # int\nprice = 19.99       # float\nbig = 1_000_000     # underscores are just visual separators\n```\n\n## ints never overflow\n\nJava's `int` wraps around at 2^31 - 1. Python ints grow as large as your memory allows:\n\n```python\nprint(2 ** 100)\n# 1267650600228229401496703205376\n```\n\nNo `long`, no `BigInteger`, no silent wraparound. If you're coming from Java, this alone will save you a production bug someday.\n\n## Division: `/` vs `//`\n\nThis is the single most important numeric gotcha:\n\n```python\nprint(7 / 2)    # 3.5  -- true division, always a float\nprint(7 // 2)   # 3    -- floor division, rounds DOWN\nprint(-7 // 2)  # -4   -- floors toward negative infinity, not toward zero!\n```\n\n`/` always produces a float, even for evenly divisible numbers (`4 / 2` is `2.0`). `//` floors — note that `-7 // 2` is `-4`, not `-3`; it rounds toward negative infinity.\n\n## The rest of the operators\n\n```python\nprint(2 ** 10)        # 1024 -- exponentiation (not ^, which is bitwise XOR!)\nprint(10 % 3)         # 1    -- remainder\nprint(round(3.14159, 2))  # 3.14\n```\n\nWatch out: `^` is bitwise XOR in Python, not power. `2 ^ 10` is `8`, and it will confuse you exactly once.",
+      "jsNote": "Java comparison: the headline differences are (1) ints never overflow — no `long`/`BigInteger` ceremony, and (2) `/` on two ints gives a float (`7 / 2 == 3.5`), whereas Java's `7 / 2 == 3`. Python's `//` is Java's `/` for ints, except it floors toward negative infinity instead of truncating toward zero. JavaScript comparison: JS has only one number type (double), so `7 / 2 === 3.5` already; Python's split is `int` for whole numbers plus `float` for decimals, and mixing them promotes to float just like you'd expect.",
+      "keyPoints": [
+        "`int` has arbitrary precision — no overflow, no `long`/`BigInteger`",
+        "`/` is true division (always float); `//` is floor division",
+        "`**` is exponentiation; `^` is bitwise XOR, not power",
+        "Underscores in literals (`1_000_000`) are visual separators"
+      ]
+    },
+    {
+      "id": "variables-strings",
+      "title": "Strings and f-strings",
+      "minutes": 12,
+      "body": "# Strings and f-strings\n\nStrings are sequences of characters in single, double, or triple quotes — pick whichever avoids escaping:\n\n```python\nsingle = 'hello'\ndouble = \"hello\"\nquote = \"She said 'hi'\"   # double quotes avoid escaping the '\nmultiline = \"\"\"line one\nline two\"\"\"\n```\n\nStrings are **immutable**: methods return new strings; they never modify in place.\n\n```python\ns = \"hello\"\nprint(s.upper())  # HELLO\nprint(s)          # hello -- s itself is unchanged!\n```\n\nThis mirrors Java exactly — and it means every \"modification\" is really a reassignment: `s = s.upper()`.\n\n## f-strings: the one formatting tool you need\n\nPrefix a string with `f` and put expressions in braces:\n\n```python\nname = \"Raymond\"\nitems = 3\nprint(f\"{name} has {items} items\")      # Raymond has 3 items\nprint(f\"{items * 10} total\")             # 30 total\nprint(f\"{name.upper()}!\")                # RAYMOND!\nprint(f\"Pi is about {3.14159:.2f}\")      # Pi is about 3.14\n```\n\nAnything valid inside the braces gets evaluated — method calls, arithmetic, even format specs like `:.2f`. You'll use f-strings for ~95% of your string building; older styles (`%` formatting, `.format()`) still appear in legacy code but you rarely need to write them.\n\n## Common string tools\n\n```python\ns = \"  pad me  \"\nprint(s.strip())              # 'pad me'\nprint(\"a,b,c\".split(\",\"))      # ['a', 'b', 'c']\nprint(\"-\".join([\"a\", \"b\"]))    # 'a-b'\nprint(\"hello\".replace(\"l\", \"L\"))  # 'heLLo'\nprint(\"py\" in \"python\")         # True\n```",
+      "jsNote": "Java comparison: Python strings are immutable exactly like Java's `String` — `s.upper()` without reassignment is the same no-op bug as forgetting `s = s.toUpperCase()`. f-strings are what `String.format()` wishes it were: inline, readable, and the default. JavaScript comparison: f-strings are template literals (`` `Hello, ${name}!` ``) with superpowers — you can put any expression and format specs inside the braces.",
+      "keyPoints": [
+        "Single, double, triple quotes are interchangeable — pick what avoids escaping",
+        "Strings are immutable: methods return new strings",
+        "f-strings (`f\"{expr}\"`) are the default formatting tool",
+        "Know `strip`, `split`, `join`, `replace`, and the `in` operator"
+      ]
+    },
+    {
+      "id": "variables-bool-none",
+      "title": "Booleans and None",
+      "minutes": 10,
+      "body": "# Booleans and None\n\nBooleans are capitalized: `True` and `False` (not `true`/`false` — that's a syntax error that will embarrass you exactly once).\n\n```python\nis_admin = True\nprint(is_admin and not False)  # True\n```\n\nLogical operators are English words — `and`, `or`, `not` — not `&&`, `||`, `!`:\n\n```python\nprint(True and False)  # False\nprint(True or False)   # True\nprint(not True)        # False\n```\n\nThey also **short-circuit** and return one of their operands, not necessarily a boolean:\n\n```python\nprint(\"\" or \"default\")   # 'default'\nprint(\"x\" and \"y\")       # 'y'\n```\n\nThat `x or default` idiom is everywhere in Python — it means \"use x, unless it's falsy, then use default\".\n\n## None: the null you actually want\n\n`None` is Python's null — a singleton meaning \"no value\":\n\n```python\nresult = None\nprint(result is None)   # True\nprint(result == None)   # True, but DON'T do this\n```\n\nAlways compare against `None` with `is`, not `==`. `is` checks identity (same object), `==` checks equality — and since there's exactly one `None` object, identity is what you want. Linters flag `== None` as a bug.\n\n```python\n# right\nif user is None:\n    print(\"no user\")\n\n# also right, and idiomatic for the common case\nif not user:\n    print(\"no user or empty\")\n```",
+      "jsNote": "Java comparison: `None` is `null`, and the `is None` rule is the big one — Java's `==` on objects is identity comparison, so `x == null` is correct Java; in Python, `==` can be overloaded, so the convention (and linter rule) is `is None` for the null check. Python's `==` behaves like Java's `.equals()`, and `is` behaves like Java's `==`. JavaScript comparison: Python has ONE null-like value (`None`), not two — no `null` vs `undefined` split, no `==` vs `===` coercion minefield. The `x or default` idiom is JS's `x || default` with the same falsy-value footgun (watch out for `0` and `\"\"` being valid values that get replaced).",
+      "keyPoints": [
+        "`True`/`False` are capitalized; logic operators are `and`/`or`/`not`",
+        "`and`/`or` short-circuit and return operands — `x or default` is idiomatic",
+        "`None` is the single null value; always test with `is None`, never `== None`",
+        "`==` is equality (like Java `.equals`); `is` is identity (like Java `==`)"
+      ]
+    },
+    {
+      "id": "variables-conversion",
+      "title": "Type Conversion and Naming",
+      "minutes": 10,
+      "body": "# Type Conversion and Naming\n\nPython rarely converts types implicitly. `\"3\" + 4` is a `TypeError`, not `\"34\"`:\n\n```python\nprint(int(\"42\"))      # 42\nprint(float(\"3.14\"))  # 3.14\nprint(str(42))         # '42'\nprint(bool(\"hello\"))  # True -- non-empty string is truthy\nprint(bool(\"\"))       # False\n```\n\nYou convert explicitly with the type names as functions. `int()` truncates floats toward zero (`int(3.99)` is `3`), and `int(\"3.14\")` fails — convert to float first if the string has a decimal point.\n\n## The input() trap, revisited\n\nThis is where the previous module's warning pays off:\n\n```python\nage = input(\"Age: \")       # user types 30, age is the STRING \"30\"\nprint(int(age) + 1)         # 31 -- convert first\n```\n\nForgetting the conversion is the most common beginner `TypeError`. When you see \"can only concatenate str\", check whether one side is secretly a string from `input()`.\n\n## Naming conventions\n\nPython convention is `snake_case` for variables and functions, `UPPER_SNAKE_CASE` for constants:\n\n```python\nuser_name = \"raymond\"   # good\nMAX_RETRIES = 3        # constant by convention (not enforced!)\n```\n\n\"Constants\" are just regular variables — nothing stops reassignment. The ALL_CAPS name is a social contract that says \"don't touch this.\"",
+      "jsNote": "Java comparison: `int(\"42\")` is `Integer.parseInt(\"42\")` and `str(42)` is `String.valueOf(42)` — but note Python's strictness: Java would never let `\"3\" + 4` compile either, so this feels familiar; it's JavaScript's `\"3\" + 4 === \"34\"` coercion that Python refuses to do. Naming-wise, `snake_case` replaces Java's `camelCase` for variables and methods — one of the most visible style differences you'll write every day. JavaScript comparison: Python has no `==` coercion and no `parseInt`/`Number()` split personality — conversions are explicit, predictable, and they throw instead of returning `NaN`.",
+      "keyPoints": [
+        "Python won't implicitly convert: `\"3\" + 4` is a TypeError",
+        "Convert explicitly: `int()`, `float()`, `str()`, `bool()`",
+        "`input()` always returns a string — convert before doing math",
+        "`snake_case` for variables, `UPPER_SNAKE_CASE` for constants (unenforced convention)"
+      ]
+    }
+  ],
+  "exercises": [
+    {
+      "id": "variables-ex1",
+      "title": "Introduce Yourself",
+      "difficulty": "easy",
+      "prompt": "Write a function `introduce(name, age)` that returns a greeting string using an f-string.\n\nExample calls:\n\n```python\nintroduce(\"Raymond\", 30)\n# returns: \"Hi, I'm Raymond and I'm 30 years old.\"\n```",
+      "starterCode": "def introduce(name, age):\n    # TODO: return the greeting string\n    pass",
+      "solution": "def introduce(name, age):\n    return f\"Hi, I'm {name} and I'm {age} years old.\"",
+      "hints": [
+        "Build the string with an f-string: `f\"...\"`",
+        "An apostrophe inside double quotes is fine: `\"I'm\"`"
+      ]
+    },
+    {
+      "id": "variables-ex2",
+      "title": "Celsius to Fahrenheit",
+      "difficulty": "easy",
+      "prompt": "Write a function `c_to_f(celsius)` that converts Celsius to Fahrenheit using the formula `F = C * 9/5 + 32`.\n\nExample calls:\n\n```python\nc_to_f(0)\n# returns: 32.0\nc_to_f(100)\n# returns: 212.0\n```",
+      "starterCode": "def c_to_f(celsius):\n    # TODO: apply the conversion formula\n    pass",
+      "solution": "def c_to_f(celsius):\n    return celsius * 9 / 5 + 32",
+      "hints": [
+        "Remember: `/` always produces a float",
+        "No conversion needed — the parameter is already a number"
+      ]
+    },
+    {
+      "id": "variables-ex3",
+      "title": "Circle Math",
+      "difficulty": "medium",
+      "prompt": "Write a function `circle_stats(radius)` that returns a tuple `(area, circumference)` for a circle with the given radius. Use `3.14159` for pi.\n\nExample calls:\n\n```python\ncircle_stats(1)\n# returns: (3.14159, 6.28318)\n```\n\nFormulas: area = pi * r squared, circumference = 2 * pi * r.",
+      "starterCode": "def circle_stats(radius):\n    pi = 3.14159\n    # TODO: compute area and circumference, return both\n    pass",
+      "solution": "def circle_stats(radius):\n    pi = 3.14159\n    area = pi * radius ** 2\n    circumference = 2 * pi * radius\n    return area, circumference",
+      "hints": [
+        "`radius ** 2` squares the radius",
+        "Returning two values separated by a comma returns a tuple"
+      ]
+    },
+    {
+      "id": "variables-ex4",
+      "title": "None-Safe Greeting",
+      "difficulty": "medium",
+      "prompt": "Write a function `greet(name)` that returns `\"Hello, <name>!\"` — but if `name` is `None`, return `\"Hello, stranger!\"` instead.\n\nExample calls:\n\n```python\ngreet(\"Raymond\")\n# returns: \"Hello, Raymond!\"\ngreet(None)\n# returns: \"Hello, stranger!\"\n```",
+      "starterCode": "def greet(name):\n    # TODO: handle the None case, then the normal case\n    pass",
+      "solution": "def greet(name):\n    if name is None:\n        return \"Hello, stranger!\"\n    return f\"Hello, {name}!\"",
+      "hints": [
+        "Test for None with `is None`, not `== None`",
+        "Handle the None case first, then the normal case"
+      ]
+    }
+  ]
+}

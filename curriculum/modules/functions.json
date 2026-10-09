@@ -1,0 +1,135 @@
+{
+  "id": "functions",
+  "title": "Functions",
+  "tagline": "def, defaults and the mutable-default trap, *args/**kwargs, scope, lambdas.",
+  "estimatedMinutes": 90,
+  "lessons": [
+    {
+      "id": "functions-def",
+      "title": "def, Parameters, and Return",
+      "minutes": 12,
+      "body": "# def, Parameters, and Return\n\n```python\ndef greet(name):\n    return f\"Hello, {name}!\"\n\nprint(greet(\"Raymond\"))  # Hello, Raymond!\n```\n\n`def` names the function, parameters sit in parentheses, the body is indented. `return` sends a value back — and a function without `return` returns `None`:\n\n```python\ndef log(message):\n    print(f\"[LOG] {message}\")\n\nresult = log(\"hi\")\nprint(result)  # None -- no return statement!\n```\n\nThat silent `None` is a classic bug: you compute the right answer, forget `return`, and the caller gets `None`.\n\n## Multiple return values (actually a tuple)\n\nSeparate values with commas and Python packs them into a tuple — the caller unpacks:\n\n```python\ndef min_max(numbers):\n    return min(numbers), max(numbers)\n\nlow, high = min_max([3, 1, 4, 1, 5])\nprint(low, high)  # 1 5\n```\n\nThere's no magic here: `return a, b` returns the tuple `(a, b)`. Unpacking on the caller's side is what makes it feel like multiple returns.\n\n## Keyword arguments\n\nCall with `name=value` to be explicit — order stops mattering:\n\n```python\ndef send_email(to, subject, body):\n    print(f\"To: {to}, Subject: {subject}\")\n\nsend_email(to=\"a@x.com\", subject=\"Hi\", body=\"...\")\n```\n\nKeyword calls are self-documenting and immune to argument-order bugs. Use them whenever a function takes more than two or three parameters.",
+      "jsNote": "Java comparison: `def greet(name):` is `String greet(String name)` with the types erased — and unlike Java, there's no method overloading by arity; one `def` per name (defaults and `*args` cover the overloading use cases, covered next). The implicit `None` return is like a Java method declared `void` — except Python won't stop you from *using* the `None` as a value, which is where the bug hides. JavaScript comparison: `def` is `function`, keyword arguments are like passing an options object, and multiple returns are array destructuring without the brackets: `const [low, high] = minMax(nums)` vs `low, high = min_max(nums)`.",
+      "keyPoints": [
+        "`def name(params):` + indented body; `return` sends a value back",
+        "No `return` means the function returns `None` — a classic silent bug",
+        "`return a, b` returns a tuple; unpack it: `x, y = f()`",
+        "Keyword arguments (`name=value`) are self-documenting and order-independent"
+      ]
+    },
+    {
+      "id": "functions-defaults",
+      "title": "Default Arguments and the Mutable-Default Trap",
+      "minutes": 12,
+      "body": "# Default Arguments and the Mutable-Default Trap\n\nParameters can have defaults, making them optional:\n\n```python\ndef greet(name, greeting=\"Hello\"):\n    return f\"{greeting}, {name}!\"\n\nprint(greet(\"Raymond\"))         # Hello, Raymond!\nprint(greet(\"Raymond\", \"Hey\"))  # Hey, Raymond!\n```\n\nDefaults are evaluated **once**, when the `def` statement runs — not on each call. For immutable defaults (numbers, strings, `None`) this never matters. For mutable defaults, it's a legendary bug:\n\n```python\ndef add_item(item, items=[]):   # DANGER\n    items.append(item)\n    return items\n\nprint(add_item(\"a\"))  # ['a']\nprint(add_item(\"b\"))  # ['a', 'b'] -- the SAME list persists!\n```\n\nEvery call shares one list object, created when the function was defined. The fix is the `None` sentinel pattern — memorize it:\n\n```python\ndef add_item(item, items=None):  # SAFE\n    if items is None:\n        items = []\n    items.append(item)\n    return items\n\nprint(add_item(\"a\"))  # ['a']\nprint(add_item(\"b\"))  # ['b'] -- independent!\n```\n\n**Rule: never use a mutable object (`[]`, `{}`, `set()`) as a default argument.** Use `None` and create the fresh object inside. This bug appears in interviews precisely because experienced developers from other languages never see it coming.",
+      "jsNote": "Java comparison: this trap has NO Java equivalent, and that's exactly why it bites Java developers — Java doesn't *have* default parameters (you'd overload instead), so there's no mental model to transfer. The rule is absolute: mutable defaults are shared across calls. JavaScript comparison: JS default parameters *are* evaluated per call, so `function f(items = [])` is safe in JS — your JS instincts will actively mislead you here. When porting JS-with-defaults code to Python, apply the `None` sentinel pattern every time.",
+      "keyPoints": [
+        "Defaults make parameters optional: `def f(x=5)`",
+        "Defaults evaluate ONCE at `def` time — not per call",
+        "NEVER use `[]`/`{}` as a default — the object is shared across calls",
+        "The fix: default to `None`, create the fresh object inside the function"
+      ]
+    },
+    {
+      "id": "functions-args",
+      "title": "*args and **kwargs",
+      "minutes": 12,
+      "body": "# *args and **kwargs\n\n`*args` collects extra positional arguments into a tuple; `**kwargs` collects extra keyword arguments into a dict:\n\n```python\ndef report(title, *args, **kwargs):\n    print(f\"== {title} ==\")\n    print(\"positional:\", args)    # a tuple\n    print(\"keywords:\", kwargs)    # a dict\n\nreport(\"stats\", 1, 2, 3, unit=\"ms\", verbose=True)\n# == stats ==\n# positional: (1, 2, 3)\n# keywords: {'unit': 'ms', 'verbose': True}\n```\n\nThe names `args`/`kwargs` are convention — the stars are the syntax. This is how you write flexible wrappers and pass-through functions:\n\n```python\ndef logged(func, *args, **kwargs):\n    print(f\"calling {func.__name__}\")\n    return func(*args, **kwargs)\n\nlogged(max, 3, 1, 2)  # calling max, then returns 3\n```\n\n## Unpacking at the call site\n\nThe stars also work in reverse — unpacking a collection into arguments:\n\n```python\nnums = [1, 2, 3]\nprint(*nums)                      # print(1, 2, 3)\n\nconfig = {\"sep\": \"-\", \"end\": \"!\"}\nprint(\"a\", \"b\", **config)        # print(\"a\", \"b\", sep=\"-\", end=\"!\")\n# a-b!\n```\n\n`*` unpacks sequences into positional args; `**` unpacks dicts into keyword args. You'll see `*args, **kwargs` pass-through in decorators, frameworks, and callbacks everywhere.",
+      "jsNote": "Java comparison: `*args` is Java varargs (`String... args`) generalized — but Python's version is an actual tuple you can iterate, slice, and pass along, and `**kwargs` has no Java equivalent at all (you'd use a `Map` parameter or a builder). The call-site unpacking `f(*nums)` replaces reflection-style `method.invoke` hacks — it's just syntax. JavaScript comparison: this is rest/spread, nearly one-to-one — `*args` is `...args` (rest), and call-site `f(*nums)` is spread `f(...nums)`. `**kwargs` collects named options where JS would take a single object parameter.",
+      "keyPoints": [
+        "`*args` gathers extra positional args into a tuple; `**kwargs` gathers keyword args into a dict",
+        "The names are convention; the `*`/`**` are syntax",
+        "Use them for flexible wrappers and pass-through: `func(*args, **kwargs)`",
+        "At call sites, `*`/`**` unpack sequences/dicts into arguments"
+      ]
+    },
+    {
+      "id": "functions-scope",
+      "title": "Scope: LEGB and Why There's No Block Scope",
+      "minutes": 12,
+      "body": "# Scope: LEGB and Why There's No Block Scope\n\nPython resolves names in this order — **LEGB**:\n\n1. **L**ocal — inside the current function\n2. **E**nclosing — inside enclosing functions (for nested functions)\n3. **G**lobal — module level\n4. **B**uiltin — `print`, `len`, etc.\n\n```python\nx = \"global\"\n\ndef outer():\n    x = \"enclosing\"\n    def inner():\n        x = \"local\"\n        print(x)     # local\n    inner()\n    print(x)         # enclosing\n\nouter()\nprint(x)             # global\n```\n\n## Assignment creates a local — unless you say otherwise\n\nReading a global inside a function is fine. **Assigning** to a name makes it local to that function, which surprises people:\n\n```python\ncount = 0\n\ndef increment():\n    count += 1   # UnboundLocalError! Assignment makes `count` local.\n```\n\nFix it with `global` (rare — usually a sign to restructure) or, in nested functions, `nonlocal`:\n\n```python\ndef make_counter():\n    count = 0\n    def increment():\n        nonlocal count   # bind to the ENCLOSING scope's count\n        count += 1\n        return count\n    return increment\n\nc = make_counter()\nprint(c(), c())  # 1 2\n```\n\n## No block scope\n\n`if`, `for`, and `while` blocks do **not** create scope — only functions (and modules/classes) do:\n\n```python\nfor i in range(3):\n    temp = i * 10\nprint(i, temp)  # 2 20 -- still visible after the loop!\n```\n\nLoop variables leaking is normal Python. Don't rely on it, but don't be alarmed by it either.",
+      "jsNote": "Java comparison: Java has block scope — a variable declared in an `if` or `for` is invisible outside it. Python doesn't: only functions, classes, and modules scope names, so loop variables and `if`-block temporaries leak into the enclosing function. The `UnboundLocalError` on `count += 1` has a Java parallel in spirit (you can't assign to a captured local from a lambda or inner class unless it's effectively final) — Python's `nonlocal` is the escape hatch Java lacks. JavaScript comparison: Python functions scope like JS `var` (function-scoped), not like `let`/`const` (block-scoped). If you write Python expecting `let`-style block scoping, you'll get bitten; expect `var`-style leaking and you'll be right.",
+      "keyPoints": [
+        "Name resolution order: Local, Enclosing, Global, Builtin (LEGB)",
+        "Assigning a name inside a function makes it local — writing globals needs `global`/`nonlocal`",
+        "`nonlocal` rebinds a name in the enclosing function (closures)",
+        "No block scope: `if`/`for`/`while` don't scope names — only functions do"
+      ]
+    },
+    {
+      "id": "functions-lambda-docs",
+      "title": "Lambdas, Docstrings, and Functions as Values",
+      "minutes": 12,
+      "body": "# Lambdas, Docstrings, and Functions as Values\n\nFunctions are objects — pass them around like any value:\n\n```python\ndef shout(text):\n    return text.upper()\n\ntransformers = [shout, str.lower]\nfor t in transformers:\n    print(t(\"hello\"))  # HELLO then hello\n```\n\nThis powers the `key=` pattern you'll see constantly:\n\n```python\nwords = [\"banana\", \"kiwi\", \"cherry\"]\nprint(sorted(words, key=len))            # ['kiwi', 'banana', 'cherry']\nprint(sorted(words, key=lambda w: w[-1]))  # sort by last letter\n```\n\n## lambdas: one expression, nothing more\n\n`lambda` makes a tiny anonymous function — but it's limited to a **single expression** (no statements, no assignments):\n\n```python\nsquare = lambda x: x ** 2\nprint(square(5))  # 25\n```\n\nUse lambdas for throwaway key functions and short callbacks. The moment it needs two lines, write a `def` — named functions are more readable and debuggable (tracebacks show `<lambda>`, which tells you nothing).\n\n## Docstrings document your functions\n\nThe first string literal in a function body is its docstring — readable via `help()`:\n\n```python\ndef c_to_f(celsius):\n    \"\"\"Convert Celsius to Fahrenheit.\"\"\"\n    return celsius * 9 / 5 + 32\n\nhelp(c_to_f)  # shows the docstring\n```\n\nWrite docstrings for every non-trivial function: one line saying what it does, plus args/return info when it's not obvious. Future you (and every teammate) will thank present you.",
+      "jsNote": "Java comparison: Python lambdas are far more limited than Java lambdas — single expression only, so any Java lambda with a block body becomes a `def` in Python. The `key=len` pattern is `Comparator.comparing(...)` without the boilerplate. Docstrings are Javadoc without the tags — `help()` is your IDE hover. JavaScript comparison: `lambda` is an arrow function that lost its braces — `x => x ** 2` maps directly, but anything needing statements must be a `def`. `sorted(words, key=len)` is `toSorted` energy, except you pass the *property function* instead of a comparator.",
+      "keyPoints": [
+        "Functions are values: pass them, store them, return them",
+        "`key=` plus a function/lambda customizes `sorted`, `min`, `max`",
+        "`lambda` is single-expression only — anything bigger deserves a `def`",
+        "Docstrings (`\"\"\"...\"\"\"`) document functions; read them with `help()`"
+      ]
+    }
+  ],
+  "exercises": [
+    {
+      "id": "functions-ex1",
+      "title": "Friendly Defaults",
+      "difficulty": "easy",
+      "prompt": "Write a function `greet(name, greeting=\"Hello\")` that returns `\"<greeting>, <name>!\"`.\n\nExample calls:\n\n```python\ngreet(\"Raymond\")\n# returns: \"Hello, Raymond!\"\ngreet(\"Raymond\", greeting=\"Hey\")\n# returns: \"Hey, Raymond!\"\n```",
+      "starterCode": "def greet(name, greeting=\"Hello\"):\n    # TODO: return the greeting string\n    pass",
+      "solution": "def greet(name, greeting=\"Hello\"):\n    return f\"{greeting}, {name}!\"",
+      "hints": [
+        "The default is already in the signature — just use the parameter",
+        "A keyword call like `greeting=\"Hey\"` overrides the default"
+      ]
+    },
+    {
+      "id": "functions-ex2",
+      "title": "Fix the Shared List",
+      "difficulty": "medium",
+      "prompt": "This function has the mutable-default bug — every call shares one list. Fix it using the `None` sentinel pattern.\n\n```python\ndef add_item(item, items=[]):\n    items.append(item)\n    return items\n```\n\nAfter your fix, these calls must behave independently:\n\n```python\nadd_item(\"a\")\n# returns: [\"a\"]\nadd_item(\"b\")\n# returns: [\"b\"]\n```",
+      "starterCode": "def add_item(item, items=[]):\n    # TODO: fix the mutable default bug\n    items.append(item)\n    return items",
+      "solution": "def add_item(item, items=None):\n    if items is None:\n        items = []\n    items.append(item)\n    return items",
+      "hints": [
+        "Change the default to `None`",
+        "Inside the function, create a fresh list when `items is None`"
+      ]
+    },
+    {
+      "id": "functions-ex3",
+      "title": "Average Anything",
+      "difficulty": "medium",
+      "prompt": "Write a function `average(*numbers)` that returns the arithmetic mean of any number of arguments, or `0` if called with none.\n\nExample calls:\n\n```python\naverage(1, 2, 3, 4)\n# returns: 2.5\naverage()\n# returns: 0\n```",
+      "starterCode": "def average(*numbers):\n    # TODO: return the mean, or 0 when empty\n    pass",
+      "solution": "def average(*numbers):\n    if not numbers:\n        return 0\n    return sum(numbers) / len(numbers)",
+      "hints": [
+        "`*numbers` arrives as a tuple",
+        "Guard the empty case first to avoid division by zero"
+      ]
+    },
+    {
+      "id": "functions-ex4",
+      "title": "Profile Builder",
+      "difficulty": "medium",
+      "prompt": "Write a function `build_profile(name, **details)` that returns a dict with the name plus all extra keyword details.\n\nExample calls:\n\n```python\nbuild_profile(\"Raymond\", role=\"engineer\", city=\"SF\")\n# returns: {\"name\": \"Raymond\", \"role\": \"engineer\", \"city\": \"SF\"}\n```",
+      "starterCode": "def build_profile(name, **details):\n    # TODO: return a dict with name plus all details\n    pass",
+      "solution": "def build_profile(name, **details):\n    profile = {\"name\": name}\n    profile.update(details)\n    return profile",
+      "hints": [
+        "`**details` arrives as a dict",
+        "Merge it into a dict that already has the name"
+      ]
+    },
+    {
+      "id": "functions-ex5",
+      "title": "Counter Factory",
+      "difficulty": "hard",
+      "prompt": "Write a function `make_counter()` that returns a function. Each call of the returned function increments and returns an internal count starting at 1. Each counter must be independent.\n\nExample calls:\n\n```python\nc1 = make_counter()\nc1()\n# returns: 1\nc1()\n# returns: 2\nc2 = make_counter()\nc2()\n# returns: 1\n```",
+      "starterCode": "def make_counter():\n    count = 0\n    # TODO: define and return the inner increment function\n    pass",
+      "solution": "def make_counter():\n    count = 0\n    def increment():\n        nonlocal count\n        count += 1\n        return count\n    return increment",
+      "hints": [
+        "The inner function needs `nonlocal count` to rebind the enclosing variable",
+        "Return the inner function itself (no parentheses)"
+      ]
+    }
+  ]
+}

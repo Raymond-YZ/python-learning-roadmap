@@ -1,0 +1,98 @@
+{
+  "id": "setup",
+  "title": "Setup & First Steps",
+  "tagline": "Install Python 3, meet the REPL, run scripts, and learn print/input.",
+  "estimatedMinutes": 60,
+  "lessons": [
+    {
+      "id": "setup-install",
+      "title": "Installing Python 3",
+      "minutes": 10,
+      "body": "# Installing Python 3\n\nEverything in this course targets **Python 3** — 3.10 or newer is ideal. Python 2 died in 2020; if your machine's bare `python` command points to Python 2, ignore it and always type `python3`.\n\n## Check what you already have\n\nOpen a terminal and run `python3 --version`. If you see something like `Python 3.12.4`, you're done — move on. If the command isn't found, install it:\n\n- macOS: `brew install python` (or the installer from python.org)\n- Windows: the installer from python.org — and check the box that says \"Add python.exe to PATH\"\n- Linux: `sudo apt install python3` (Ubuntu/Debian) or equivalent\n\nAfter installing, close and reopen your terminal, then verify with `python3 --version` again.\n\n## One gotcha: `python` vs `python3`\n\nOn many systems, `python` still points to the ancient Python 2. Get in the habit of typing `python3` for everything in this course — running scripts, opening the REPL, installing packages. When in doubt, `python3 --version` tells you the truth.\n\n```python\n>>> import sys\n>>> sys.version\n'3.12.4 (main, Jun  6 2024, 18:18:56) [Clang 13.1.6 ]'\n```\n\nThat snippet is also your first REPL trick: `sys.version` shows exactly which interpreter you're talking to.\n\n```python\n>>> import sys\n>>> print(sys.executable)\n'/usr/local/bin/python3'\n```\n\n`sys.executable` shows the exact binary being used — handy later when you juggle virtual environments and wonder which Python is actually running.",
+      "jsNote": "Java comparison: installing Python is like installing a JDK — but there's no compile step afterward, so the feedback loop is instant. Where you'd run `javac Main.java && java Main`, here it's just `python3 main.py`. One habit to build now: always use `python3`, never bare `python`, since bare `python` still means Python 2 on many machines (similar to how `java` vs `javac` version mismatches bite you).",
+      "keyPoints": [
+        "This course targets Python 3.10+; Python 2 is dead",
+        "Verify your install with `python3 --version`",
+        "Always type `python3`, never bare `python`",
+        "`sys.version` and `sys.executable` show which interpreter you're using"
+      ]
+    },
+    {
+      "id": "setup-repl",
+      "title": "The REPL: Python's Instant Feedback Loop",
+      "minutes": 10,
+      "body": "# The REPL: Python's Instant Feedback Loop\n\nThe REPL (read-eval-print loop) is an interactive Python session in your terminal. Type `python3` with no arguments and you get a `>>>` prompt. Whatever you type gets evaluated immediately.\n\n```python\n>>> 2 + 2\n4\n>>> name = \"Raymond\"\n>>> name.upper()\n'RAYMOND'\n```\n\nNo compile step, no boilerplate, no `public static void main`. This is where you'll test every idea in this course before putting it in a file — think of it as a scratch pad that actually runs.\n\n## REPL survival skills\n\n- `exit()` or Ctrl-D quits the session.\n- The up/down arrows recall previous lines (history persists between sessions on most systems).\n- `_` holds the result of the last expression: type `40 + 2`, then `_ * 2`, and you get `84`.\n- A `...` continuation prompt means Python is waiting for more — usually an indented block. An empty line finishes it.\n\n```python\n>>> for i in range(3):\n...     print(i)\n...\n0\n1\n2\n```\n\n## When to use the REPL vs a file\n\nUse the REPL to probe: \"what does this return?\", \"what type is that?\", \"does this method exist?\". Use a file for anything you want to keep. A good rule: if you typed it twice in the REPL, it belongs in a file.",
+      "jsNote": "Java comparison: the REPL is like JShell (`jshell` ships with the JDK) — but Python's is the default way everyone works, not an afterthought. JavaScript comparison: it's the equivalent of pasting expressions into the browser console. If you've used either, you already know the workflow; the difference is that in Python the REPL is a first-class daily tool, not a debugging sidekick.",
+      "keyPoints": [
+        "`python3` with no arguments opens the REPL (`>>>` prompt)",
+        "`exit()` or Ctrl-D quits; arrow keys recall history",
+        "`_` holds the last result; `...` means \"keep typing the block\"",
+        "Probe ideas in the REPL; keep real code in files"
+      ]
+    },
+    {
+      "id": "setup-scripts",
+      "title": "Running .py Scripts",
+      "minutes": 10,
+      "body": "# Running .py Scripts\n\nReal programs live in files ending in `.py`. Create `hello.py`:\n\n```python\nname = \"Raymond\"\nprint(f\"Hello, {name}!\")\n```\n\nRun it from the terminal (not from inside the REPL) with `python3 hello.py`. That's the whole build-and-run cycle: edit, save, `python3 hello.py`, repeat. No compilation, no classpath, no build tool at this stage.\n\n## Scripts vs the REPL\n\nAnything you can type at the `>>>` prompt, you can put in a `.py` file — with one difference: the REPL automatically prints the value of every expression, but a script only prints what you explicitly `print()`. This trips up every beginner once:\n\n```python\n# in the REPL, this displays 4\n>>> 2 + 2\n4\n```\n\n```python\n# in hello.py, this displays NOTHING\n2 + 2\n```\n\nIf your script runs silently, you probably computed something without printing it. Wrap it in `print()`.\n\n## Passing arguments\n\nScripts read command-line arguments from `sys.argv` — a list where element 0 is the script name:\n\n```python\nimport sys\n\nprint(sys.argv)\n```\n\nRun `python3 hello.py a b c` and you'll see `['hello.py', 'a', 'b', 'c']`. You'll use this pattern constantly for little utilities.",
+      "jsNote": "Java comparison: `python3 hello.py` replaces the whole `javac Hello.java && java Hello` dance — one step, no `.class` files littering your directory. `sys.argv` is the direct equivalent of `public static void main(String[] args)`, including the quirk that element 0 is the program name, not the first real argument.",
+      "keyPoints": [
+        "Scripts are `.py` files run with `python3 file.py`",
+        "The REPL auto-prints expressions; scripts only print via `print()`",
+        "`sys.argv` holds command-line arguments (`argv[0]` is the script name)",
+        "Edit-save-run is the whole cycle — no compilation step"
+      ]
+    },
+    {
+      "id": "setup-io",
+      "title": "print(), input(), and Comments",
+      "minutes": 10,
+      "body": "# print(), input(), and Comments\n\n## print() does more than you think\n\n`print()` takes any number of arguments and separates them with a space by default:\n\n```python\nprint(\"The answer is\", 42)\n# The answer is 42\n```\n\nTwo keyword arguments change its behavior: `sep` (separator between items) and `end` (what's printed after everything — a newline by default):\n\n```python\nprint(\"a\", \"b\", \"c\", sep=\"-\")\n# a-b-c\nprint(\"no newline\", end=\"\")\nprint(\"same line\")\n# no newlinesame line\n```\n\n## input() always returns a string\n\n`input()` pauses the program, reads one line from the keyboard, and returns it **as a string** — even if the user typed digits:\n\n```python\nname = input(\"Your name: \")\nprint(f\"Hello, {name}!\")\n```\n\n```python\nage = input(\"Your age: \")\nprint(type(age))  # <class 'str'> -- always str!\n```\n\nNeed a number? Convert it explicitly: `age = int(input(\"Your age: \"))`. Type conversion gets its own lesson in the next module.\n\n## Comments\n\nA `#` starts a comment that runs to the end of the line. There is no multi-line comment syntax — just stack `#` lines:\n\n```python\n# This whole line is a comment.\nx = 5  # so is everything after the # here\n\n# Multi-line comments are just\n# several single-line comments.\n```\n\nWrite comments that explain **why**, not what — `x = 5  # set x to 5` helps nobody.",
+      "jsNote": "Java comparison: `print()` is `System.out.println` without the ceremony, and `sep`/`end` have no direct Java equivalent — you'd build the string first. `input()` is like `new Scanner(System.in).nextLine()`: always a string, convert it yourself. JavaScript comparison: `input()` is a blocking `prompt()` that always returns a string — same stringly-typed gotcha.",
+      "keyPoints": [
+        "`print()` joins arguments with spaces; `sep` and `end` customize it",
+        "`input()` always returns a string — convert with `int()`/`float()` for math",
+        "Comments start with `#`; there is no block-comment syntax",
+        "Comment the why, not the what"
+      ]
+    }
+  ],
+  "exercises": [
+    {
+      "id": "setup-ex1",
+      "title": "Hello, Your Name",
+      "difficulty": "easy",
+      "prompt": "Write a script that stores your name in a variable called `name` and prints a greeting.\n\nExample output:\n\n```python\nHello, Raymond!\n```\n\n(Use any name you like.)",
+      "starterCode": "name = \"\"  # TODO: put your name here\n# TODO: print a greeting using the name variable",
+      "solution": "name = \"Raymond\"\nprint(f\"Hello, {name}!\")",
+      "hints": [
+        "Build the greeting with an f-string: `f\"Hello, {name}!\"`",
+        "Don't forget `print()` — scripts don't auto-display values like the REPL does"
+      ]
+    },
+    {
+      "id": "setup-ex2",
+      "title": "Echo Bot",
+      "difficulty": "easy",
+      "prompt": "Write a script that asks the user for their favorite programming language with `input()`, then prints it back in a sentence.\n\nExample session:\n\n```python\nYour favorite language: Python\nPython is a great choice!\n```",
+      "starterCode": "# TODO: ask the user for their favorite language\n# TODO: print it back in a sentence",
+      "solution": "language = input(\"Your favorite language: \")\nprint(f\"{language} is a great choice!\")",
+      "hints": [
+        "`input(\"prompt\")` displays the prompt and returns what the user types",
+        "The result is already a string — no conversion needed here"
+      ]
+    },
+    {
+      "id": "setup-ex3",
+      "title": "One-Line Receipt",
+      "difficulty": "medium",
+      "prompt": "Using a **single** `print()` call, produce exactly this output:\n\n```python\nItem: coffee | Price: 4.50\nItem: bagel  | Price: 3.25\n```\n\nUse the `sep` keyword argument — no string concatenation.",
+      "starterCode": "# TODO: one print() call that produces the two-line receipt above",
+      "solution": "print(\"Item: coffee | Price: 4.50\", \"Item: bagel  | Price: 3.25\", sep=\"\\n\")",
+      "hints": [
+        "`sep` controls what goes *between* the arguments",
+        "You need a newline between the two lines — how do you write a newline inside a string?"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,135 @@
+{
+  "id": "data-structures",
+  "title": "Lists, Tuples, Dicts & Sets",
+  "tagline": "The big four collections in depth: indexing, slicing, unpacking, comprehensions.",
+  "estimatedMinutes": 90,
+  "lessons": [
+    {
+      "id": "data-structures-lists",
+      "title": "Lists: Your ArrayList",
+      "minutes": 15,
+      "body": "# Lists: Your ArrayList\n\nLists are ordered, mutable sequences — the workhorse collection:\n\n```python\nscores = [85, 92, 78]\nscores.append(95)       # [85, 92, 78, 95]\nscores[0] = 86          # lists are mutable\nprint(len(scores))      # 4\n```\n\n## Indexing and slicing\n\nIndexing starts at 0; negative indices count from the end. Slices copy a sub-range with `[start:stop:step]`:\n\n```python\nitems = [\"a\", \"b\", \"c\", \"d\", \"e\"]\nprint(items[0])      # 'a'\nprint(items[-1])     # 'e' -- last element\nprint(items[1:3])    # ['b', 'c'] -- stop is EXCLUSIVE\nprint(items[:2])     # ['a', 'b']\nprint(items[::2])    # ['a', 'c', 'e'] -- every other\nprint(items[::-1])   # ['e', 'd', 'c', 'b', 'a'] -- reversed copy\n```\n\nThe exclusive stop is the #1 slicing bug source: `items[1:3]` has 2 elements, not 3. Think of indices as pointing *between* elements.\n\n## Essential list methods\n\n```python\nnums = [3, 1, 2]\nnums.append(4)        # add ONE item to the end\nnums.extend([5, 6])   # add MANY items (vs append([5, 6]), which nests!)\nnums.insert(0, 0)     # insert at position\nnums.remove(1)        # remove first occurrence of VALUE 1\npopped = nums.pop()   # remove and RETURN last item\nnums.sort()           # sort in place\nprint(3 in nums)      # True -- membership test\n```\n\n`append` vs `extend` is a classic bug: `append([5, 6])` nests the list as one element; `extend([5, 6])` adds the two items flat. And `sort()` sorts in place and returns `None` — assign the result and you've just thrown your list away.",
+      "jsNote": "Java comparison: a list is `ArrayList` without the generics — `List<String>` becomes just a list, and it happily holds mixed types (don't, but it can). Indexing `items[0]` replaces `items.get(0)`, `len()` replaces `.size()`, and slicing `items[1:3]` replaces `items.subList(1, 3)`. Note `sort()` sorts in place like `Collections.sort()`; the non-mutating version is the `sorted()` builtin. JavaScript comparison: lists are Arrays with different method names — `append` is `push`, `extend` is `push(...items)` or `concat`. Negative indexing `items[-1]` has no JS equivalent (modern JS has `at(-1)`).",
+      "keyPoints": [
+        "Lists are ordered and mutable — `append`, `insert`, `remove`, `pop`, `sort`",
+        "Negative indices count from the end; slices use an exclusive stop: `[start:stop]`",
+        "`append` adds one item; `extend` adds many — don't confuse them",
+        "`sort()` sorts in place and returns `None`; `sorted()` returns a new list"
+      ]
+    },
+    {
+      "id": "data-structures-tuples",
+      "title": "Tuples: Immutable Sequences",
+      "minutes": 10,
+      "body": "# Tuples: Immutable Sequences\n\nA tuple is an immutable, ordered sequence — a list you can't change:\n\n```python\npoint = (10, 20)\nprint(point[0])   # 10 -- indexing works\n# point[0] = 5   -- TypeError: tuples don't support item assignment\n```\n\nParentheses are optional; the **comma** makes the tuple:\n\n```python\npair = 1, 2       # this IS a tuple\nsingle = (5,)     # one-element tuple needs the trailing comma!\nnot_a_tuple = (5)  # just the int 5 in parentheses\n```\n\n`(5)` vs `(5,)` is a genuine gotcha — the trailing comma is load-bearing.\n\n## Unpacking\n\nTuples (and lists) unpack into names — this is how multi-value returns work:\n\n```python\nx, y = (10, 20)              # x=10, y=20\nfirst, *rest = [1, 2, 3, 4]  # first=1, rest=[2, 3, 4]\na, b = b, a                   # swap with no temp variable\n```\n\nThe counts must match (unless you use `*`), or you get a `ValueError`.\n\n## When to use a tuple\n\nUse tuples for fixed-shape data: coordinates, RGB colors, dict keys, anything where the *position* has meaning and the contents shouldn't change. If you're appending or removing, you want a list. Tuples are also hashable (when their contents are), so they can be dict keys — lists can't.",
+      "jsNote": "Java comparison: there's no direct tuple type — the closest analogies are a small immutable class or a `record` (Java 16+), but tuples need no declaration at all. Unpacking `x, y = point` has no Java equivalent; you'd write `int x = point.x(); int y = point.y();`. JavaScript comparison: no tuples either — destructuring `const [x, y] = [10, 20]` is the direct equivalent of unpacking, and the swap `a, b = b, a` mirrors `[a, b] = [b, a]`.",
+      "keyPoints": [
+        "Tuples are immutable sequences; the comma (not the parens) makes them",
+        "`(5,)` is a tuple; `(5)` is just an int — the trailing comma matters",
+        "Unpacking assigns multiple names at once: `x, y = point`",
+        "Use tuples for fixed-shape data and dict keys; lists for growing/shrinking collections"
+      ]
+    },
+    {
+      "id": "data-structures-dicts",
+      "title": "Dicts: Your HashMap",
+      "minutes": 15,
+      "body": "# Dicts: Your HashMap\n\nDicts map hashable keys to values — the single most-used collection in Python:\n\n```python\nuser = {\"name\": \"Raymond\", \"role\": \"engineer\"}\nprint(user[\"name\"])       # Raymond\nuser[\"level\"] = \"L4\"      # add or overwrite\nprint(user.get(\"team\"))    # None -- no KeyError!\n```\n\n## `[]` vs `.get()`\n\n`user[\"missing\"]` raises `KeyError`. `user.get(\"missing\")` returns `None` (or a default you pass: `.get(\"missing\", \"n/a\")`). Rule of thumb: use `[]` when the key *must* exist (a missing key is a bug worth crashing on), `.get()` when absence is normal.\n\n```python\nconfig = {\"retries\": 3}\nretries = config.get(\"timeout\", 30)  # 30 -- default when absent\n```\n\n## Iterating dicts\n\n```python\nuser = {\"name\": \"Raymond\", \"role\": \"engineer\"}\n\nfor key in user:                 # iterates KEYS\n    print(key)\n\nfor key, value in user.items():  # the workhorse pattern\n    print(f\"{key}: {value}\")\n\nprint(\"name\" in user)           # True -- `in` checks KEYS\nprint(list(user.keys()))\nprint(list(user.values()))\n```\n\n`in` on a dict checks keys, not values — and it's O(1), which is why dicts (and sets) are the answer to \"is X in this collection?\" performance questions.\n\n## Keys must be hashable\n\nStrings, numbers, and tuples of hashables work as keys. Lists and dicts don't (they're mutable):\n\n```python\nvalid = {(10, 20): \"point\"}  # tuple key: fine\n# invalid = {[1, 2]: \"x\"}   # TypeError: unhashable type: 'list'\n```",
+      "jsNote": "Java comparison: a dict is `HashMap` with literal syntax — `{\"a\": 1}` instead of `new HashMap<>()` plus `put` calls, and `user[\"name\"]` instead of `user.get(\"name\")`. Note the inversion: Python's `.get()` is the *safe* accessor (returns `None`), while Java's `.get()` is the one that returns null on missing keys. Iteration via `.items()` mirrors `entrySet()`. JavaScript comparison: dicts are what you wish plain objects were — a real hash map where keys can be any hashable type, not just strings. For JS `Map` users: `d[k]`, `.get(k)`, `k in d`, and `.items()` map to `m.get(k)`, `m.get(k)`, `m.has(k)`, and `m.entries()` — with nicer syntax.",
+      "keyPoints": [
+        "Dicts map hashable keys to values: `{\"name\": \"Raymond\"}`",
+        "`d[key]` raises `KeyError` on missing keys; `d.get(key, default)` doesn't",
+        "`for k, v in d.items()` is the standard iteration pattern",
+        "`in` checks keys in O(1); keys must be hashable (no lists/dicts as keys)"
+      ]
+    },
+    {
+      "id": "data-structures-sets",
+      "title": "Sets: Unique Collections and Fast Membership",
+      "minutes": 10,
+      "body": "# Sets: Unique Collections and Fast Membership\n\nA set is an unordered collection of unique, hashable items:\n\n```python\ntags = {\"python\", \"backend\", \"python\"}\nprint(tags)          # {'backend', 'python'} -- duplicate gone, order not guaranteed\ntags.add(\"api\")\ntags.discard(\"zzz\")  # no error even though 'zzz' isn't there\n```\n\nUse `discard`, not `remove`, unless you *want* a `KeyError` on missing items — `discard` is the forgiving one.\n\n## Set operations\n\n```python\na = {1, 2, 3}\nb = {3, 4, 5}\nprint(a | b)  # {1, 2, 3, 4, 5} -- union\nprint(a & b)  # {3}             -- intersection\nprint(a - b)  # {1, 2}          -- difference\nprint(a ^ b)  # {1, 2, 4, 5}    -- symmetric difference\n```\n\nThese read beautifully for real problems: \"users in both groups\" is `group_a & group_b`.\n\n## The real reason sets exist: O(1) membership\n\nChecking `x in some_list` scans the whole list — O(n). Checking `x in some_set` hashes — O(1):\n\n```python\n# slow for large data\nif user_id in user_id_list:\n    print(\"found\")\n```\n\n```python\n# fast: convert once, test many times\nuser_id_set = set(user_id_list)\nif user_id in user_id_set:\n    print(\"found\")\n```\n\nAny time you're doing repeated membership tests against a large collection, reach for a set. Also note: `{}` is an empty **dict**, not a set — write `set()` for an empty set.",
+      "jsNote": "Java comparison: a set is `HashSet` with literal syntax and operator overloads — `a & b` instead of `retainAll` gymnastics, `a | b` instead of `addAll`. The `{}`-is-a-dict gotcha has no Java parallel; just memorize `set()` for empty. JavaScript comparison: nearly identical to JS `Set` — `add`/`discard` (like `delete`), `|`/`&` have no operator form in JS (you'd spread and filter), and the O(1) membership argument is the same reason you'd pick a JS `Set` over an array for lookups.",
+      "keyPoints": [
+        "Sets hold unique, unordered, hashable items; `{}` is a dict — use `set()` for empty",
+        "`|` union, `&` intersection, `-` difference, `^` symmetric difference",
+        "Membership tests are O(1) — convert lists to sets for repeated lookups",
+        "`discard` won't error on missing items; `remove` will"
+      ]
+    },
+    {
+      "id": "data-structures-comprehensions",
+      "title": "Comprehensions and Picking the Right Structure",
+      "minutes": 15,
+      "body": "# Comprehensions and Picking the Right Structure\n\nComprehensions build collections in one expressive line:\n\n```python\nsquares = [x ** 2 for x in range(10)]\nevens = [x for x in range(10) if x % 2 == 0]\n```\n\nRead them left to right: \"square each x, for x in range(10), keeping only evens.\" Every comprehension has an expression, a loop, and an optional condition:\n\n```python\n# list: [expr for x in items if cond]\n# set:  {expr for x in items if cond}\n# dict: {key: value for x in items if cond}\n\nnames = [\"amy\", \"bob\", \"cara\"]\nupper_set = {n.upper() for n in names}       # {'AMY', 'BOB', 'CARA'}\nlengths = {n: len(n) for n in names}         # {'amy': 3, 'bob': 3, 'cara': 4}\n```\n\nComprehensions aren't just shorter — they're faster than equivalent `append` loops, and they're the idiom every Python codebase expects.\n\n## Generator expressions: lazy comprehensions\n\nParentheses instead of brackets give you a lazy, one-shot iterator — values are produced on demand, never stored:\n\n```python\ntotal = sum(x ** 2 for x in range(10_000_000))  # no giant list in memory\n```\n\nIf you're only iterating once (summing, joining, passing to a function), the generator form avoids building a list you immediately throw away.\n\n## Choosing the right structure\n\n- **List:** ordered, mutable, duplicates OK — the default sequence.\n- **Tuple:** fixed shape, immutable — coordinates, records, dict keys.\n- **Dict:** key to value lookup — configs, indexes, caches.\n- **Set:** uniqueness + fast membership — deduping, \"is X in the group?\"\n\nWhen in doubt, start with a list or dict. Reach for tuples when shape is fixed, sets when uniqueness or lookup speed matters.",
+      "jsNote": "Java comparison: comprehensions are Java Streams without the ceremony — `[x*2 for x in items]` is `items.stream().map(x -> x*2).collect(toList())` in a fraction of the characters. Generator expressions are lazy like streams, but simpler. JavaScript comparison: list comprehensions are `map`+`filter` fused — `[x**2 for x in nums if x > 0]` is `nums.filter(x => x > 0).map(x => x**2)`. Dict comprehensions are `Object.fromEntries(nums.map(...))` without the awkwardness. Once comprehensions click, you'll miss them in every other language.",
+      "keyPoints": [
+        "Comprehensions: `[expr for x in items if cond]` — also work for sets and dicts",
+        "They're faster and more idiomatic than append-loops",
+        "Generator expressions `(expr for x in items)` are lazy — no list built",
+        "List = default sequence; tuple = fixed shape; dict = lookup; set = uniqueness/membership"
+      ]
+    }
+  ],
+  "exercises": [
+    {
+      "id": "data-structures-ex1",
+      "title": "First and Last",
+      "difficulty": "easy",
+      "prompt": "Write a function `first_and_last(items)` that returns a tuple `(first, last)` of the first and last elements of a list.\n\nExample calls:\n\n```python\nfirst_and_last([10, 20, 30, 40])\n# returns: (10, 40)\n```",
+      "starterCode": "def first_and_last(items):\n    # TODO: return (first, last) as a tuple\n    pass",
+      "solution": "def first_and_last(items):\n    return items[0], items[-1]",
+      "hints": [
+        "Negative index `-1` is the last element",
+        "Separate two return values with a comma to return a tuple"
+      ]
+    },
+    {
+      "id": "data-structures-ex2",
+      "title": "Word Lengths",
+      "difficulty": "easy",
+      "prompt": "Write a function `word_lengths(words)` that returns a dict mapping each word to its length.\n\nExample calls:\n\n```python\nword_lengths([\"hi\", \"hello\", \"hey\"])\n# returns: {\"hi\": 2, \"hello\": 5, \"hey\": 3}\n```",
+      "starterCode": "def word_lengths(words):\n    # TODO: build and return the dict\n    pass",
+      "solution": "def word_lengths(words):\n    return {word: len(word) for word in words}",
+      "hints": [
+        "A dict comprehension builds this in one line",
+        "Or loop and assign: `result[word] = len(word)`"
+      ]
+    },
+    {
+      "id": "data-structures-ex3",
+      "title": "Even Squares",
+      "difficulty": "medium",
+      "prompt": "Write a function `even_squares(n)` that returns a list of the squares of even numbers from 0 up to (but not including) `n`, using a single list comprehension.\n\nExample calls:\n\n```python\neven_squares(10)\n# returns: [0, 4, 16, 36, 64]\n```",
+      "starterCode": "def even_squares(n):\n    # TODO: one list comprehension\n    pass",
+      "solution": "def even_squares(n):\n    return [x ** 2 for x in range(n) if x % 2 == 0]",
+      "hints": [
+        "Structure: `[expression for x in range(n) if condition]`",
+        "`x % 2 == 0` tests for even"
+      ]
+    },
+    {
+      "id": "data-structures-ex4",
+      "title": "Common Ground",
+      "difficulty": "medium",
+      "prompt": "Write a function `common_items(a, b)` that returns a **set** of items appearing in both lists.\n\nExample calls:\n\n```python\ncommon_items([1, 2, 3], [2, 3, 4])\n# returns: {2, 3}\n```",
+      "starterCode": "def common_items(a, b):\n    # TODO: return the shared items as a set\n    pass",
+      "solution": "def common_items(a, b):\n    return set(a) & set(b)",
+      "hints": [
+        "Convert both lists to sets first",
+        "The `&` operator is set intersection"
+      ]
+    },
+    {
+      "id": "data-structures-ex5",
+      "title": "Vote Tally",
+      "difficulty": "hard",
+      "prompt": "Write a function `tally_votes(votes)` that takes a list of vote strings and returns a dict mapping each candidate to their vote count.\n\nExample calls:\n\n```python\ntally_votes([\"amy\", \"bob\", \"amy\", \"amy\", \"cara\", \"bob\"])\n# returns: {\"amy\": 3, \"bob\": 2, \"cara\": 1}\n```",
+      "starterCode": "def tally_votes(votes):\n    counts = {}\n    # TODO: count each vote\n    return counts",
+      "solution": "def tally_votes(votes):\n    counts = {}\n    for vote in votes:\n        counts[vote] = counts.get(vote, 0) + 1\n    return counts",
+      "hints": [
+        "`counts.get(vote, 0)` gives 0 for first-time candidates",
+        "This counting pattern is so common it has a stdlib shortcut: `collections.Counter`"
+      ]
+    }
+  ]
+}
