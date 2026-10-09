@@ -357,6 +357,11 @@ function viewModule(mod) {
   const idx = state.curriculum.modules.findIndex((m) => m.id === mod.id);
   const prev = state.curriculum.modules[idx - 1];
   const next = state.curriculum.modules[idx + 1];
+  const mst = moduleStats(mod);
+  const mAllDone = mst.total > 0 && mst.done === mst.total;
+  const modToggleBtn = '<button type="button" class="btn ' + (mAllDone ? 'done-state' : 'ghost') +
+    '" data-action="toggle-module" data-id="' + mod.id + '">' +
+    (mAllDone ? '✓ Module complete' : 'I already know this — mark module complete') + '</button>';
   const lessons = mod.lessons.map((l) =>
     '<a class="lesson-row" href="#/lesson/' + l.id + '">' +
     '<span class="checkbox ' + (lessonDone(l.id) ? 'on' : '') + '">' + (lessonDone(l.id) ? '✓' : '') + '</span>' +
@@ -373,7 +378,8 @@ function viewModule(mod) {
     '<div class="crumb"><a href="#/">Roadmap</a> · Module ' + (idx + 1) + ' of ' + state.curriculum.modules.length + '</div>' +
     '<div class="card"><h2 style="margin:0 0 6px">' + escapeHtml(mod.title) + '</h2>' +
     '<p style="margin:0 0 4px;color:var(--muted)">' + escapeHtml(mod.tagline || '') + '</p>' +
-    '<p class="note-small">~' + mod.estimatedMinutes + ' min · ' + mod.lessons.length + ' lessons · ' + mod.exercises.length + ' exercises</p></div>' +
+    '<p class="note-small">~' + mod.estimatedMinutes + ' min · ' + mod.lessons.length + ' lessons · ' + mod.exercises.length + ' exercises</p>' +
+    '<div style="margin-top:14px">' + modToggleBtn + '</div></div>' +
     '<div class="section-head">Lessons</div><div class="card" style="padding:6px 18px">' + lessons + '</div>' +
     '<div class="section-head">Practice</div><div class="exercise-list">' + exercises + '</div>' +
     '<div class="pager">' +
@@ -474,6 +480,14 @@ function viewProgress() {
     '</div>' +
     '<p class="note-small">Progress is saved in this browser on this machine — close the app and reopen it, everything is still here.</p></div>' +
     '<div class="card" style="padding:6px 18px">' + rows + '</div>' +
+    '<div class="card"><h3 style="margin-top:0">Backup</h3>' +
+    '<p class="note-small">Download your progress as a file, or restore it from a backup — ' +
+    'handy if you ever clear your browser\'s site data.</p>' +
+    '<div style="display:flex;gap:10px;flex-wrap:wrap">' +
+    '<button type="button" class="btn ghost" data-action="export-progress">Export progress</button>' +
+    '<button type="button" class="btn ghost" data-action="import-progress">Import backup</button>' +
+    '<input type="file" id="import-file" accept=".json,application/json" class="hidden">' +
+    '</div><p class="note-small" id="import-msg"></p></div>' +
     '<div class="card"><h3 style="margin-top:0">Start over</h3>' +
     '<p class="note-small">Clears all lesson and exercise progress on this machine. This can\'t be undone.</p>' +
     '<button type="button" class="btn danger" data-action="reset">Reset all progress</button></div>'
@@ -580,6 +594,34 @@ document.addEventListener('click', (ev) => {
         ? el.textContent.replace('Hide', 'Show')
         : el.textContent.replace('Show', 'Hide');
     }
+  } else if (action === 'export-progress') {
+    const stamp = new Date().toISOString().slice(0, 10);
+    const blob = new Blob([JSON.stringify(state.progress, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'python-roadmap-progress-' + stamp + '.json';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  } else if (action === 'import-progress') {
+    const inp = document.getElementById('import-file');
+    if (inp) inp.click();
+  } else if (action === 'toggle-module') {
+    const mod = findModule(el.getAttribute('data-id'));
+    if (mod) {
+      const st = moduleStats(mod);
+      const allDone = st.total > 0 && st.done === st.total;
+      for (const l of mod.lessons) {
+        if (allDone) delete state.progress.lessons[l.id];
+        else state.progress.lessons[l.id] = true;
+      }
+      for (const e of mod.exercises) {
+        if (allDone) delete state.progress.exercises[e.id];
+        else state.progress.exercises[e.id] = true;
+      }
+      saveProgress();
+      route();
+    }
   } else if (action === 'reset') {
     if (window.confirm('Reset all progress? This clears every lesson and exercise on this machine.')) {
       resetProgress();
@@ -589,6 +631,34 @@ document.addEventListener('click', (ev) => {
 });
 
 window.addEventListener('hashchange', route);
+
+document.addEventListener('change', (ev) => {
+  if (ev.target && ev.target.id === 'import-file') {
+    const f = ev.target.files && ev.target.files[0];
+    ev.target.value = '';
+    if (!f) return;
+    const rd = new FileReader();
+    rd.onload = () => {
+      try {
+        const p = JSON.parse(rd.result);
+        if (!p || typeof p !== 'object' || typeof p.lessons !== 'object' || typeof p.exercises !== 'object') {
+          throw new Error('bad shape');
+        }
+        state.progress = {
+          lessons: p.lessons || {},
+          exercises: p.exercises || {},
+          updatedAt: p.updatedAt || null,
+        };
+        saveProgress();
+        route();
+      } catch (e) {
+        const msg = document.getElementById('import-msg');
+        if (msg) msg.textContent = 'That file doesn\'t look like a progress backup — nothing was changed.';
+      }
+    };
+    rd.readAsText(f);
+  }
+});
 
 /* ---------------- boot ---------------- */
 

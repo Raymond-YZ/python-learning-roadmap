@@ -24,7 +24,10 @@ Progress (completed lessons and exercises) is saved in your browser's
 localStorage. Close the app, reopen it later — everything is still there.
 The port is fixed (8765) so the browser always finds your saved data.
 
-To start over, use **Progress → Reset all progress** in the app.
+To start over, use **Progress → Reset all progress** in the app. To guard
+against losing progress when clearing browser site data, use
+**Progress → Export progress** to download a backup JSON file, and
+**Import backup** to restore it later.
 
 ## What's inside
 
